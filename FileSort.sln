@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileSort.UnitTests", "FileS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileSort.IntegrationTests", "FileSort.IntegrationTests\FileSort.IntegrationTests.csproj", "{156FC266-6E2D-4629-AFDE-5A085506C760}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileGenerate", "FileGenerate\FileGenerate.csproj", "{16098CF8-F428-4DB6-B17E-915A74EAD378}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{156FC266-6E2D-4629-AFDE-5A085506C760}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{156FC266-6E2D-4629-AFDE-5A085506C760}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{156FC266-6E2D-4629-AFDE-5A085506C760}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16098CF8-F428-4DB6-B17E-915A74EAD378}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16098CF8-F428-4DB6-B17E-915A74EAD378}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16098CF8-F428-4DB6-B17E-915A74EAD378}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16098CF8-F428-4DB6-B17E-915A74EAD378}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
