@@ -1,14 +1,77 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace FileSort
 {
     public class FileSort
     {
-        public static int[] Sort(IEnumerable<int> source)
+        public void Sort(string inputFileName, string outputFileName)
         {
-            var sorter = new OppositeMergeSort();
+            using (var fileStream = File.OpenRead(inputFileName))
+            {
+                var inputFileEntries = new StreamEnumerable(fileStream).Select(FileEntry.Parse);
 
-            return sorter.Sort(source);
+                var sorter = new OppositeMergeSort();
+                var outputFileEntries = sorter.Sort(inputFileEntries);
+                var outputLines = outputFileEntries.Select(x => x.ToString());
+                File.WriteAllLines(outputFileName, outputLines);
+            }
+        }
+
+        private class StreamEnumerable : IEnumerable<string>
+        {
+            private readonly Stream _stream;
+
+            public StreamEnumerable(Stream stream)
+            {
+                _stream = stream;
+            }
+
+            public IEnumerator<string> GetEnumerator()
+            {
+                return new StreamEnumerator(_stream);
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return this.GetEnumerator();
+            }
+
+            private class StreamEnumerator : IEnumerator<string>
+            {
+                private readonly StreamReader _streamReader;
+
+                public StreamEnumerator(Stream stream)
+                {
+                    _streamReader = new StreamReader(stream);
+                }
+
+                public string Current { get; private set; }
+
+                object IEnumerator.Current => Current;
+
+                public void Dispose()
+                {
+                    _streamReader.Dispose();
+                }
+
+                public bool MoveNext()
+                {
+                    if (_streamReader.EndOfStream)
+                        return false;
+
+                    Current = _streamReader.ReadLine();
+                    return true;
+                }
+
+                public void Reset()
+                {
+                    throw new NotImplementedException();
+                }
+            }
         }
     }
 }

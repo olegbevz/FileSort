@@ -87,40 +87,5 @@ namespace FileSort.UnitTests
 
             CollectionAssert.AreEqual(expectedArray, sortedArray);
         }
-
-        public struct FileEntry : IComparable
-        {
-            public static FileEntry Parse(string data)
-            {
-                var parts = data.Split('.');
-                return new FileEntry(int.Parse(parts[0]), parts[1]);
-            }
-
-            public FileEntry(int number, string name)
-            {
-                Number = number;
-                Name = name;
-            }
-
-            public int Number;
-
-            public string Name;
-
-            public int CompareTo(object obj)
-            {
-                if (!(obj is FileEntry otherEntry))
-                    return -1;
-
-                if (Name != null && otherEntry.Name != null)
-                {
-                    var compareResult = Name.CompareTo(otherEntry.Name);
-
-                    if (compareResult != 0)
-                        return compareResult;
-                }
-
-                return Number.CompareTo(otherEntry.Number);
-            }
-        }
     }
 }
