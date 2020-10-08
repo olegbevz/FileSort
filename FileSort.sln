@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileSort", "FileSort\FileSo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileSort.UnitTests", "FileSort.UnitTests\FileSort.UnitTests.csproj", "{37135626-6825-4183-A96A-20ECDBA9D617}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileSort.IntegrationTests", "FileSort.IntegrationTests\FileSort.IntegrationTests.csproj", "{156FC266-6E2D-4629-AFDE-5A085506C760}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{37135626-6825-4183-A96A-20ECDBA9D617}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{37135626-6825-4183-A96A-20ECDBA9D617}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{37135626-6825-4183-A96A-20ECDBA9D617}.Release|Any CPU.Build.0 = Release|Any CPU
+		{156FC266-6E2D-4629-AFDE-5A085506C760}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{156FC266-6E2D-4629-AFDE-5A085506C760}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{156FC266-6E2D-4629-AFDE-5A085506C760}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{156FC266-6E2D-4629-AFDE-5A085506C760}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
