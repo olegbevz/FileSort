@@ -9,17 +9,27 @@ namespace FileGenerate
         private readonly long _maxSize;
         private readonly Encoding _targetEncoding;
         private readonly string _lineSeparator;
+        private readonly IRandomStringFactory _stringFactory;
 
-        public RandomStringEnumerable(long maxSize, Encoding targetEncoding, string lineSeparator)
+        public RandomStringEnumerable(
+            long maxSize, 
+            Encoding targetEncoding, 
+            string lineSeparator, 
+            IRandomStringFactory stringFactory)
         {
             _maxSize = maxSize;
             _targetEncoding = targetEncoding;
             _lineSeparator = lineSeparator;
+            _stringFactory = stringFactory;
         }
 
         public IEnumerator<string> GetEnumerator()
         {
-            return new RandomStringEnumerator(_maxSize, _targetEncoding, _lineSeparator);
+            return new RandomStringEnumerator(
+                _maxSize, 
+                _targetEncoding, 
+                _lineSeparator, 
+                _stringFactory);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -32,13 +42,20 @@ namespace FileGenerate
             private readonly long _maxSize;
             private readonly Encoding _targetEncoding;
             private readonly int _lineSeparatorSize;
+            private readonly IRandomStringFactory _stringFactory;
+
             private long _currentSize;
 
-            public RandomStringEnumerator(long maxSize, Encoding targetEncoding, string lineSeparator)
+            public RandomStringEnumerator(
+                long maxSize, 
+                Encoding targetEncoding, 
+                string lineSeparator, 
+                IRandomStringFactory stringFactory)
             {
                 _maxSize = maxSize;
                 _targetEncoding = targetEncoding;
                 _lineSeparatorSize = targetEncoding.GetByteCount(lineSeparator);
+                _stringFactory = stringFactory;
             }
 
             public string Current { get; private set; }
@@ -54,7 +71,7 @@ namespace FileGenerate
                 if (_currentSize >= _maxSize)
                     return false;
 
-                Current = "2. Banana is yellow";
+                Current = _stringFactory.Create();
                 var stringSize = _targetEncoding.GetByteCount(Current);
                 _currentSize += stringSize;
                 _currentSize += _lineSeparatorSize;

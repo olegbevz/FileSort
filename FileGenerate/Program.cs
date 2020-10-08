@@ -22,7 +22,8 @@ namespace FileGenerate
                     var randomStringSource = new RandomStringEnumerable(
                             options.FileSize,
                             streamWriter.Encoding,
-                            streamWriter.NewLine);
+                            streamWriter.NewLine,
+                            new ConstantStringFactory("30432. Something something something"));
 
                     foreach (var line in randomStringSource)
                         streamWriter.WriteLine(line);
