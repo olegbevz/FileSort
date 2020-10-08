@@ -4,7 +4,7 @@ using CommandLine;
 
 namespace FileGenerate
 {
-    partial class Program
+    class Program
     {
         static void Main(string[] args)
         {
@@ -20,7 +20,7 @@ namespace FileGenerate
                 using (var streamWriter = new StreamWriter(fileStream))
                 {
                     var randomStringSource = new RandomStringEnumerable(
-                            options.FileSize,
+                            MemorySize.Parse(options.FileSize).GetTotalBytes(),
                             streamWriter.Encoding,
                             streamWriter.NewLine,
                             new ConstantStringFactory("30432. Something something something"));
