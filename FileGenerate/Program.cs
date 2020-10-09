@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using CommandLine;
 
 namespace FileGenerate
@@ -23,10 +25,15 @@ namespace FileGenerate
                             MemorySize.Parse(options.FileSize).GetTotalBytes(),
                             streamWriter.Encoding,
                             streamWriter.NewLine,
-                            new ConstantStringFactory("30432. Something something something"));
+                            new SequenceStringFactory());
 
+                    var writeTask = Task.CompletedTask;
+
+                    var stopWatch = Stopwatch.StartNew();
                     foreach (var line in randomStringSource)
                         streamWriter.WriteLine(line);
+
+                    var elapsed = stopWatch.Elapsed;
                 }
             }
             catch (Exception ex)
