@@ -46,7 +46,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FileEntry.cs" />
     <Compile Include="FileSort.cs" />
     <Compile Include="FileSortOptions.cs" />
     <Compile Include="OppositeMergeSort.cs" />
@@ -56,6 +55,12 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FileSort.Core\FileSort.Core.csproj">
+      <Project>{a53f97aa-fe9e-4716-80cc-946368c508c0}</Project>
+      <Name>FileSort.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using FileSort.Core;
+using NUnit.Framework;
 using System;
 using System.Linq;
 
