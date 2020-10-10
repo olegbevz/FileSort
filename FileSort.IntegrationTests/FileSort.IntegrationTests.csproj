@@ -74,6 +74,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\FileCheck\FileCheck.csproj">
+      <Project>{88b760e6-5f7b-43a9-b3ea-ebbc7bd97e7e}</Project>
+      <Name>FileCheck</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FileGenerate\FileGenerate.csproj">
       <Project>{16098cf8-f428-4db6-b17e-915a74ead378}</Project>
       <Name>FileGenerate</Name>
