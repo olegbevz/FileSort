@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,29 +7,29 @@ namespace FileGenerate
 {
     public class RandomStringEnumerable : IEnumerable<string>
     {
-        private readonly long _maxSize;
+        private readonly long _targetSize;
         private readonly Encoding _targetEncoding;
-        private readonly string _lineSeparator;
+        private readonly string _separator;
         private readonly IRandomStringFactory _stringFactory;
 
         public RandomStringEnumerable(
-            long maxSize, 
+            long targetSize, 
             Encoding targetEncoding, 
-            string lineSeparator, 
+            string separator, 
             IRandomStringFactory stringFactory)
         {
-            _maxSize = maxSize;
+            _targetSize = targetSize;
             _targetEncoding = targetEncoding;
-            _lineSeparator = lineSeparator;
+            _separator = separator;
             _stringFactory = stringFactory;
         }
 
         public IEnumerator<string> GetEnumerator()
         {
             return new RandomStringEnumerator(
-                _maxSize, 
+                _targetSize, 
                 _targetEncoding, 
-                _lineSeparator, 
+                _separator, 
                 _stringFactory);
         }
 
@@ -39,23 +40,35 @@ namespace FileGenerate
 
         private class RandomStringEnumerator : IEnumerator<string>
         {
-            private readonly long _maxSize;
+            private const char Salt = 'X';
+
+            private readonly int _minStringSize;
+            private readonly long _targetSize;
             private readonly Encoding _targetEncoding;
-            private readonly int _lineSeparatorSize;
+            private readonly int _separatorSize;
             private readonly IRandomStringFactory _stringFactory;
 
             private long _currentSize;
 
             public RandomStringEnumerator(
-                long maxSize, 
+                long targetSize, 
                 Encoding targetEncoding, 
-                string lineSeparator, 
+                string separator, 
                 IRandomStringFactory stringFactory)
             {
-                _maxSize = maxSize;
+                _targetSize = targetSize;
                 _targetEncoding = targetEncoding;
-                _lineSeparatorSize = targetEncoding.GetByteCount(lineSeparator);
+                _separatorSize = targetEncoding.GetByteCount(separator);
                 _stringFactory = stringFactory;
+                _minStringSize = _targetEncoding.GetByteCount($"{int.MaxValue}. {Salt}");
+
+                if (_targetSize > 0 && _targetSize < _minStringSize)
+                {
+                    throw new ArgumentOutOfRangeException(
+                        nameof(targetSize),
+                        targetSize,
+                        $"Target size should not be less than {_minStringSize}");
+                }
             }
 
             public string Current { get; private set; }
@@ -68,13 +81,29 @@ namespace FileGenerate
 
             public bool MoveNext()
             {
-                if (_currentSize >= _maxSize)
+                if (_currentSize >= _targetSize)
                     return false;
 
-                Current = _stringFactory.Create();
-                var stringSize = _targetEncoding.GetByteCount(Current);
+                var current = _stringFactory.Create();
+                var stringSize = _targetEncoding.GetByteCount(current);
+                var nextSize = _currentSize + stringSize;
+
+                var spaceLeft = _targetSize - nextSize - _separatorSize;
+                if (spaceLeft > 0 && spaceLeft <= _minStringSize)
+                {
+                    var charsLeft = (int)(spaceLeft / _targetEncoding.GetByteCount(Salt.ToString()));
+                    current += new string(Salt, charsLeft);
+                    stringSize = _targetEncoding.GetByteCount(current);
+                }
+                else if (nextSize >= _targetSize)
+                {
+                    current = current.Substring(0, current.Length - (int)(nextSize - _targetSize + _separatorSize));
+                    stringSize = _targetEncoding.GetByteCount(current);
+                }
+
                 _currentSize += stringSize;
-                _currentSize += _lineSeparatorSize;
+                _currentSize += _separatorSize;
+                Current = current;
                 return true;
             }
 

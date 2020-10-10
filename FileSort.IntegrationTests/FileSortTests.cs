@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using FileGenerate;
+using NUnit.Framework;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -23,8 +24,7 @@ namespace FileSort.IntegrationTests
         }
 
         [TestCase("0mb", TestName = "ShouldSort0MBRandomFile")]
-        [TestCase("1bytes", TestName = "ShouldSort1BytesRandomFile")]
-        [TestCase("10bytes", TestName = "ShouldSort10BytesRandomFile")]
+        [TestCase("15bytes", TestName = "ShouldSort15BytesRandomFile")]
         [TestCase("100bytes", TestName = "ShouldSort100BytesRandomFile")]
         [TestCase("1kb", TestName = "ShouldSort1KBRandomFile")]
         [TestCase("10KB", TestName = "ShouldSort10KBRandomFile")]
@@ -44,7 +44,17 @@ namespace FileSort.IntegrationTests
                 "FileGenerate.exe",
                 $"{inputFileName} -s {fileSize}");
 
+            inputFileName = Path.Combine(generateProcess.StartInfo.WorkingDirectory, inputFileName);
+
             Console.WriteLine($"File '{inputFileName}' was generated in {generateProcess.TotalProcessorTime}.");
+            
+            var actualFileSize = new FileInfo(inputFileName).Length;
+            var expectedFileSize = MemorySize.Parse(fileSize).GetTotalBytes();
+
+            Assert.AreEqual(
+                expectedFileSize,
+                actualFileSize,
+                $"File '{inputFileName}' should have size {expectedFileSize} but has {actualFileSize}.");
 
             var sortProcess = RunProcess(
                 "FileSort.exe",

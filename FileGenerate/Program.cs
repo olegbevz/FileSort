@@ -19,22 +19,23 @@ namespace FileGenerate
         {
             try
             {
+                var fileSize = MemorySize.Parse(options.FileSize).GetTotalBytes();
+                if (fileSize > 0 && fileSize < 15)
+                    throw new ArgumentOutOfRangeException("File size can not be less that 15 bytes");
+
                 using (var fileStream = File.Open(options.OutputFileName, FileMode.Create))
                 using (var streamWriter = new StreamWriter(fileStream))
                 {
+                    
+
                     var randomStringSource = new RandomStringEnumerable(
-                            MemorySize.Parse(options.FileSize).GetTotalBytes(),
+                            fileSize,
                             streamWriter.Encoding,
                             streamWriter.NewLine,
                             CreateStringFactory(options.StringFactory));
 
-                    var writeTask = Task.CompletedTask;
-
-                    var stopWatch = Stopwatch.StartNew();
                     foreach (var line in randomStringSource)
                         streamWriter.WriteLine(line);
-
-                    var elapsed = stopWatch.Elapsed;
                 }
             }
             catch (Exception ex)
