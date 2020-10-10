@@ -40,17 +40,36 @@ namespace FileSort.IntegrationTests
             var inputFileName = Path.Combine("Content", fileSize + ".txt");
             var outputFileName = Path.Combine("Content", fileSize + "_sorted.txt");
 
+            var elapsedTime = TimeSpan.Zero;
+            var stopwatch = Stopwatch.StartNew();
+
             RunProcess(
                 "FileGenerate.exe",
                 $"{inputFileName} -s {fileSize}");
+
+            elapsedTime = stopwatch.Elapsed;
+            stopwatch.Restart();
+            Console.WriteLine($"File '{inputFileName}' was generated in {elapsedTime}.");
+
+            stopwatch.Start();
 
             RunProcess(
                 "FileSort.exe",
                 $"{inputFileName} {outputFileName}");
 
+            elapsedTime = stopwatch.Elapsed;
+            stopwatch.Restart();
+            Console.WriteLine($"File '{inputFileName}' was sorted in {elapsedTime}.");
+
+            stopwatch.Start();
+
             var checkProcess = RunProcess(
                 "FileCheck.exe",
                 $"{outputFileName}");
+
+            elapsedTime = stopwatch.Elapsed;
+            stopwatch.Stop();
+            Console.WriteLine($"File '{outputFileName}' was checked in {elapsedTime}.");
 
             Assert.AreEqual(0, checkProcess.ExitCode, $"File '{inputFileName}' was not properly sorted or check failed.");
         }
