@@ -61,7 +61,6 @@
     <Compile Include="StringFactories\ConstantStringFactory.cs" />
     <Compile Include="FileGenerateOptions.cs" />
     <Compile Include="IRandomStringFactory.cs" />
-    <Compile Include="MemorySize.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RandomStringEnumerable.cs" />
@@ -73,6 +72,12 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FileSort.Core\FileSort.Core.csproj">
+      <Project>{A53F97AA-FE9E-4716-80CC-946368C508C0}</Project>
+      <Name>FileSort.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

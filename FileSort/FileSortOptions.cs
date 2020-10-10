@@ -10,6 +10,8 @@ namespace FileSort
             public string InputFileName { get; set; }
             [Value(1, Required = true, HelpText = "Path to the target file")]
             public string OutputFileName { get; set; }
+            [Option("file-buffer", Required = false, Default = "1MB", HelpText = "Size of FileStream internal buffer")]
+            public string FileBuffer { get; set; }
         }
     }
 }

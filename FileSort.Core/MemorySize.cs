@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FileGenerate
+namespace FileSort.Core
 {
     public class MemorySize
     {
@@ -32,6 +32,11 @@ namespace FileGenerate
         public long GetTotalBytes()
         {
             return _size;
+        }
+
+        public static implicit operator MemorySize(int size)
+        {
+            return new MemorySize(size);
         }
     }
 }

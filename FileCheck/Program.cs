@@ -21,26 +21,30 @@ namespace FileCheck
         {
             try
             {
-                using (var fileStream = File.Open(options.FileName, FileMode.Open))
-                using (var streamReader = new StreamReader(fileStream))
+                var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer).GetTotalBytes();
+
+                using (var fileStream = FileWithBuffer.OpenRead(options.FileName, fileBufferSize))
                 {
-                    string previousLine = null;
-
-                    while (!streamReader.EndOfStream)
+                    using (var streamReader = new StreamReader(fileStream))
                     {
-                        var currentLine = streamReader.ReadLine();
+                        string previousLine = null;
 
-                        if (previousLine != null)
+                        while (!streamReader.EndOfStream)
                         {
-                            if (FileEntry.Parse(previousLine).CompareTo(FileEntry.Parse(currentLine)) > 0)
-                            {
-                                Console.WriteLine($"File '{options.FileName}' is not properly sorted.");
-                                Console.WriteLine($"Line '{currentLine}' should be before line '{previousLine}'.");
-                                return 1;
-                            }
-                        }
+                            var currentLine = streamReader.ReadLine();
 
-                        previousLine = currentLine;
+                            if (previousLine != null)
+                            {
+                                if (FileEntry.Parse(previousLine).CompareTo(FileEntry.Parse(currentLine)) > 0)
+                                {
+                                    Console.WriteLine($"File '{options.FileName}' is not properly sorted.");
+                                    Console.WriteLine($"Line '{currentLine}' should be before line '{previousLine}'.");
+                                    return 1;
+                                }
+                            }
+
+                            previousLine = currentLine;
+                        }
                     }
                 }
 

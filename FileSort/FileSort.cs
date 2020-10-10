@@ -9,12 +9,18 @@ namespace FileSort
 {
     public class FileSort
     {
+        private readonly int _fileBufferSize;
+
+        public FileSort(int fileBufferSize)
+        {
+            _fileBufferSize = fileBufferSize;
+        }
+
         public void Sort(string inputFileName, string outputFileName)
         {
-            using (var fileStream = File.OpenRead(inputFileName))
+            using (var fileStream = FileWithBuffer.OpenRead(inputFileName, _fileBufferSize))
             {
                 var inputFileEntries = new StreamEnumerable(fileStream).Select(FileEntry.Parse);
-
                 var sorter = new OppositeMergeSort();
                 var outputFileEntries = sorter.Sort(inputFileEntries);
                 var outputLines = outputFileEntries.Select(x => x.ToString());

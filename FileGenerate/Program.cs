@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
-using System.Threading.Tasks;
 using CommandLine;
+using FileSort.Core;
 
 namespace FileGenerate
 {
@@ -19,23 +18,21 @@ namespace FileGenerate
         {
             try
             {
-                var fileSize = MemorySize.Parse(options.FileSize).GetTotalBytes();
-                if (fileSize > 0 && fileSize < 15)
-                    throw new ArgumentOutOfRangeException("File size can not be less that 15 bytes");
+                var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer).GetTotalBytes();
 
-                using (var fileStream = File.Open(options.OutputFileName, FileMode.Create))
-                using (var streamWriter = new StreamWriter(fileStream))
+                using (var fileStream = FileWithBuffer.OpenWrite(options.FileName, fileBufferSize))
                 {
-                    
+                    using (var streamWriter = new StreamWriter(fileStream))
+                    {
+                        var randomStringSource = new RandomStringEnumerable(
+                                MemorySize.Parse(options.FileSize).GetTotalBytes(),
+                                streamWriter.Encoding,
+                                streamWriter.NewLine,
+                                CreateStringFactory(options.StringFactory));
 
-                    var randomStringSource = new RandomStringEnumerable(
-                            fileSize,
-                            streamWriter.Encoding,
-                            streamWriter.NewLine,
-                            CreateStringFactory(options.StringFactory));
-
-                    foreach (var line in randomStringSource)
-                        streamWriter.WriteLine(line);
+                        foreach (var line in randomStringSource)
+                            streamWriter.WriteLine(line);
+                    }
                 }
             }
             catch (Exception ex)

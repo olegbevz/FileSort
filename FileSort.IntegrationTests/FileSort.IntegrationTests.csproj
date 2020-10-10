@@ -82,6 +82,10 @@
       <Project>{16098cf8-f428-4db6-b17e-915a74ead378}</Project>
       <Name>FileGenerate</Name>
     </ProjectReference>
+    <ProjectReference Include="..\FileSort.Core\FileSort.Core.csproj">
+      <Project>{A53F97AA-FE9E-4716-80CC-946368C508C0}</Project>
+      <Name>FileSort.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FileSort\FileSort.csproj">
       <Project>{aacaa4a9-7720-40ee-b2d2-ee84adc058f5}</Project>
       <Name>FileSort</Name>

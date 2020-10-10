@@ -1,4 +1,5 @@
 ﻿using FileGenerate;
+using FileSort.Core;
 using NUnit.Framework;
 using System;
 using System.Diagnostics;
