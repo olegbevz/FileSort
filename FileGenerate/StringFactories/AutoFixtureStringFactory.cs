@@ -1,4 +1,5 @@
 ﻿using AutoFixture;
+using System.Text;
 
 namespace FileGenerate
 {
@@ -11,9 +12,9 @@ namespace FileGenerate
             return _fixture.Create<int>();
         }
 
-        protected override string GetNextName()
+        protected override void AppendNextName(StringBuilder stringBuilder)
         {
-            return _fixture.Create<string>();
+            stringBuilder.Append(_fixture.Create<string>());
         }
     }
 }

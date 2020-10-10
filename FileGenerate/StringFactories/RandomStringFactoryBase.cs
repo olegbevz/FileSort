@@ -16,29 +16,31 @@ namespace FileGenerate
             "yellow"
         };
 
+        private readonly StringBuilder _stringBuilder = new StringBuilder();
+
         public string Create()
         {
-            var number = GetNextNumber();
-            var name = GetNextName();
+            _stringBuilder.Append(GetNextNumber());
+            _stringBuilder.Append(". ");
+            AppendNextName(_stringBuilder);
 
-            return $"{number}. {name}";
+            var @string = _stringBuilder.ToString();
+            _stringBuilder.Clear();
+            return @string;
         }
 
         protected abstract int GetNextNumber();
 
-        protected virtual string GetNextName()
+        protected virtual void AppendNextName(StringBuilder stringBuilder)
         {
             int sentenceLength = GetNextSentenceLength();
 
-            var stringBuilder = new StringBuilder();
             for (int i = 0; i < sentenceLength; i++)
             {
                 stringBuilder.Append(GetNextWord());
                 if (i < sentenceLength - 1)
-                    stringBuilder.Append(" ");
+                    stringBuilder.Append(' ');
             }
-
-            return stringBuilder.ToString();
         }
 
         protected virtual string GetNextWord()
