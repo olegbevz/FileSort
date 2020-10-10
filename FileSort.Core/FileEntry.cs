@@ -4,6 +4,7 @@ namespace FileSort.Core
 {
     public struct FileEntry : IComparable
     {
+        public static FileEntry None = new FileEntry();
         public static FileEntry Parse(string data)
         {
             if (TryParse(data, out var entry))
@@ -14,12 +15,13 @@ namespace FileSort.Core
 
         public static bool TryParse(string data, out FileEntry fileEntry)
         {
-            fileEntry = new FileEntry();
+            fileEntry = None;
             var parts = data.Split('.');
             if (parts.Length != 2) return false;
             if (!int.TryParse(parts[0], out var number)) return false;
-            if (string.IsNullOrEmpty(parts[1])) return false;
-            fileEntry = new FileEntry(number, parts[1]);
+            var name = parts[1].TrimStart();
+            if (string.IsNullOrEmpty(name)) return false;
+            fileEntry = new FileEntry(number, name);
             return true;
         }
 

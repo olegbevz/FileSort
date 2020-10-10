@@ -21,7 +21,7 @@ namespace FileGenerate
 
         protected override int GetNextSentenceLength()
         {
-            return _random.Next(_maxSentenceLength);
+            return _random.Next(1, _maxSentenceLength);
         }
 
         protected override int GetNextWordNumber(int maxWordNumber)

@@ -45,6 +45,7 @@ namespace FileSort.IntegrationTests
                 $"{inputFileName} -s {fileSize}");
 
             inputFileName = Path.Combine(generateProcess.StartInfo.WorkingDirectory, inputFileName);
+            outputFileName = Path.Combine(generateProcess.StartInfo.WorkingDirectory, outputFileName);
 
             Console.WriteLine($"File '{inputFileName}' was generated in {generateProcess.TotalProcessorTime}.");
             
@@ -60,7 +61,14 @@ namespace FileSort.IntegrationTests
                 "FileSort.exe",
                 $"{inputFileName} {outputFileName}");
 
-            Console.WriteLine($"File '{inputFileName}' was sorted in {sortProcess.TotalProcessorTime}.");
+            Console.WriteLine($"File '{outputFileName}' was sorted in {sortProcess.TotalProcessorTime}.");
+
+            actualFileSize = new FileInfo(outputFileName).Length;
+
+            Assert.AreEqual(
+                expectedFileSize,
+                actualFileSize,
+                $"File '{outputFileName}' should have size {expectedFileSize} but has {actualFileSize}.");
 
             var checkProcess = RunProcess(
                 "FileCheck.exe",

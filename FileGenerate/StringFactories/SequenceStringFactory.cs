@@ -28,24 +28,26 @@
 
         protected override int GetNextNumber()
         {
-            return GetNextRandomNumber(ref _numberCounter, _numberStep, _maxNumber);
+            return GetNextRandomNumber(ref _numberCounter, _numberStep, 0, _maxNumber);
         }
 
         protected override int GetNextSentenceLength()
         {
-            return GetNextRandomNumber(ref _sentenceLegthCounter, _sentenceLengthStep, _maxSentenceLegth);
+            return GetNextRandomNumber(ref _sentenceLegthCounter, _sentenceLengthStep, 1, _maxSentenceLegth);
         }
 
         protected override int GetNextWordNumber(int maxWordNumber)
         {
-            return GetNextRandomNumber(ref _wordNumberCounter, _wordNumberStep, maxWordNumber);
+            return GetNextRandomNumber(ref _wordNumberCounter, _wordNumberStep, 0, maxWordNumber);
         }
 
-        private int GetNextRandomNumber(ref int counter, int step, int maxValue)
+        private int GetNextRandomNumber(ref int counter, int step, int minValue, int maxValue)
         {
             counter += step;
             if (counter > maxValue)
                 counter -= maxValue;
+            else if (counter < minValue)
+                counter += minValue;            
 
             return counter;
         }
