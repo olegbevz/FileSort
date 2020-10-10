@@ -68,6 +68,7 @@
     <Compile Include="StringFactories\RandomStringFactory.cs" />
     <Compile Include="StringFactories\RandomStringFactoryBase.cs" />
     <Compile Include="StringFactories\SequenceStringFactory.cs" />
+    <Compile Include="StringFactories\StringFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

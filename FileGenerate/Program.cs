@@ -10,7 +10,8 @@ namespace FileGenerate
     {
         static void Main(string[] args)
         {
-            Parser.Default.ParseArguments<FileGenerateOptions>(args)
+            var parser = new Parser(cfg => cfg.CaseInsensitiveEnumValues = true);
+            parser.ParseArguments<FileGenerateOptions>(args)
                 .WithParsed(HandleFileGenerate);
         }
 
@@ -25,7 +26,7 @@ namespace FileGenerate
                             MemorySize.Parse(options.FileSize).GetTotalBytes(),
                             streamWriter.Encoding,
                             streamWriter.NewLine,
-                            new SequenceStringFactory());
+                            CreateStringFactory(options.StringFactory));
 
                     var writeTask = Task.CompletedTask;
 
@@ -39,6 +40,19 @@ namespace FileGenerate
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+            }
+        }
+
+        private static IRandomStringFactory CreateStringFactory(StringFactory stringFactory)
+        {
+            switch (stringFactory)
+            {
+                case StringFactory.Constant: return new ConstantStringFactory("32. Cherry is the best");
+                case StringFactory.Sequence: return new SequenceStringFactory();
+                case StringFactory.Random: return new RandomStringFactory();
+                case StringFactory.Bogus: return new BogusStringFactory();
+                case StringFactory.AutoFixture: return new AutoFixtureStringFactory();
+                default: throw new NotSupportedException(nameof(stringFactory));
             }
         }
     }
