@@ -10,19 +10,20 @@ namespace FileSort
     public class FileSort
     {
         private readonly int _fileBufferSize;
+        private readonly OppositeMergeSort<FileLine> _sorter;
 
-        public FileSort(int fileBufferSize)
+        public FileSort(int fileBufferSize, long memoryBufferSize)
         {
             _fileBufferSize = fileBufferSize;
+            _sorter = new OppositeMergeSort<FileLine>(memoryBufferSize, new FileLineSizeCalculator());
         }
 
         public void Sort(string inputFileName, string outputFileName)
         {
             using (var fileStream = FileWithBuffer.OpenRead(inputFileName, _fileBufferSize))
             {
-                var inputFileEntries = new StreamEnumerable(fileStream).Select(FileEntry.Parse);
-                var sorter = new OppositeMergeSort();
-                var outputFileEntries = sorter.Sort(inputFileEntries);
+                var inputFileEntries = new StreamEnumerable(fileStream).Select(FileLine.Parse);
+                var outputFileEntries = _sorter.Sort(inputFileEntries);
                 var outputLines = outputFileEntries.Select(x => x.ToString());
                 File.WriteAllLines(outputFileName, outputLines);
             }

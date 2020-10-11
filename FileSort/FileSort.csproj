@@ -47,8 +47,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ChunkStack.cs" />
+    <Compile Include="ConstantSizeCalculator.cs" />
+    <Compile Include="FileLineSizeCalculator.cs" />
     <Compile Include="FileSort.cs" />
     <Compile Include="FileSortOptions.cs" />
+    <Compile Include="ISizeCalculator.cs" />
     <Compile Include="OppositeMergeSort.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

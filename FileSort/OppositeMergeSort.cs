@@ -4,11 +4,20 @@ using System.Linq;
 
 namespace FileSort
 {
-    public class OppositeMergeSort
+    public class OppositeMergeSort<T> where T : IComparable
     {
-        public T[] Sort<T>(IEnumerable<T> source) where T : IComparable
+        private readonly long _bufferSize;
+        private readonly ISizeCalculator<T> _sizeCalculator;
+
+        public OppositeMergeSort(long bufferSize, ISizeCalculator<T> sizeCalculator)
         {
-            var chunkStack = new ChunkStack<T>();
+            _bufferSize = bufferSize;
+            _sizeCalculator = sizeCalculator;
+        }
+
+        public T[] Sort(IEnumerable<T> source)
+        {
+            var chunkStack = new ChunkStack<T>(_bufferSize, _sizeCalculator);
             int chunkSize = 2;
             var chunk = new T[chunkSize];
             int chunkIndex = 0;

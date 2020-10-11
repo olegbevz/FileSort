@@ -15,8 +15,10 @@ namespace FileSort
         private static void HandleFileSort(FileSortOptions options)
         {
             try
-            {                
-                var fileSort = new FileSort((int)MemorySize.Parse(options.FileBuffer).GetTotalBytes());
+            {
+                var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer).GetTotalBytes();
+                var memoryBufferSize = MemorySize.Parse(options.MemoryBuffer).GetTotalBytes();
+                var fileSort = new FileSort(fileBufferSize, memoryBufferSize);
                 fileSort.Sort(options.InputFileName, options.OutputFileName);
             }
             catch (Exception ex)

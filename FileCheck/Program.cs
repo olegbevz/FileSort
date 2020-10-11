@@ -35,7 +35,7 @@ namespace FileCheck
 
                             if (previousLine != null)
                             {
-                                if (FileEntry.Parse(previousLine).CompareTo(FileEntry.Parse(currentLine)) > 0)
+                                if (FileLine.Parse(previousLine).CompareTo(FileLine.Parse(currentLine)) > 0)
                                 {
                                     Console.WriteLine($"File '{options.FileName}' is not properly sorted.");
                                     Console.WriteLine($"Line '{currentLine}' should be before line '{previousLine}'.");

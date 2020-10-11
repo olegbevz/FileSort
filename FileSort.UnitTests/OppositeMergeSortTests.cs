@@ -8,7 +8,9 @@ namespace FileSort.UnitTests
     [TestFixture]
     public class OppositeMergeSortTests
     {
-        private readonly OppositeMergeSort _sorter = new OppositeMergeSort();
+        private readonly OppositeMergeSort<int> _sorter = new OppositeMergeSort<int>(
+            100 * MemorySize.MB, 
+            new ConstantSizeCalculator<int>(sizeof(int)));
 
         [TestCase]
         public void ShouldSortSimpleNumberArray()
@@ -67,24 +69,26 @@ namespace FileSort.UnitTests
         [TestCase]
         public void ShouldSortNumberStringArray()
         {
-            var sourceArray = new FileEntry[] 
+            var sorter = new OppositeMergeSort<FileLine>(10 * MemorySize.MB, new FileLineSizeCalculator());
+
+            var sourceArray = new FileLine[] 
             {
-                FileEntry.Parse("415. Apple"),
-                FileEntry.Parse("30432. Something something something"),
-                FileEntry.Parse("1. Apple"),
-                FileEntry.Parse("32. Cherry is the best"),
-                FileEntry.Parse("2. Banana is yellow")
+                FileLine.Parse("415. Apple"),
+                FileLine.Parse("30432. Something something something"),
+                FileLine.Parse("1. Apple"),
+                FileLine.Parse("32. Cherry is the best"),
+                FileLine.Parse("2. Banana is yellow")
             };
-            var expectedArray = new FileEntry[] 
+            var expectedArray = new FileLine[] 
             {
-                FileEntry.Parse("1. Apple"),
-                FileEntry.Parse("415. Apple"),
-                FileEntry.Parse("2. Banana is yellow"),
-                FileEntry.Parse("32. Cherry is the best"),
-                FileEntry.Parse("30432. Something something something")
+                FileLine.Parse("1. Apple"),
+                FileLine.Parse("415. Apple"),
+                FileLine.Parse("2. Banana is yellow"),
+                FileLine.Parse("32. Cherry is the best"),
+                FileLine.Parse("30432. Something something something")
             };
 
-            var sortedArray = _sorter.Sort(sourceArray);
+            var sortedArray = sorter.Sort(sourceArray);
 
             CollectionAssert.AreEqual(expectedArray, sortedArray);
         }
