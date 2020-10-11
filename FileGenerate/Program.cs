@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 using FileSort.Core;
@@ -21,6 +23,7 @@ namespace FileGenerate
             {
                 var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer).GetTotalBytes();
                 var totalSize = MemorySize.Parse(options.FileSize).GetTotalBytes();
+                var fileName = options.FileName;
 
                 if (options.Parts == 1)
                 {
@@ -28,13 +31,27 @@ namespace FileGenerate
                 }
                 else
                 {
-                    var partSize = totalSize / options.Parts;
+                    var partRatios = Enumerable.Range(1, options.Parts).Select(x => Math.Pow(2, x)).ToArray();
+                    var targetDirectory = Path.GetDirectoryName(fileName);
+                    var fileExtension = Path.GetExtension(fileName);
+                    var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+                    var partNames = partRatios.Select(x => Path.Combine(
+                        targetDirectory,
+                        $"{fileNameWithoutExtension}_part{x}{fileExtension}")).ToArray();
+                    var ratioSize = totalSize / partRatios.Sum();
+                    var partSizes = partRatios.Select(x => (long)(x * ratioSize)).ToArray();
+                    var sizeDefference = partSizes.Sum() - totalSize;
+                    partSizes[0] += sizeDefference;
+
                     var writeTasks = new Task[options.Parts];
+                    long currentPosition = 0;
                     for (int i = 0; i < options.Parts; i++)
                     {
-                        long startPosition = i * partSize; 
-                        writeTasks[i] = Task.Run(() => FilePartGenerate(options.FileName, startPosition, partSize, options));
-                        
+                        var partName = i == options.Parts - 1 ? fileName : partNames[i];
+                        var partSize = partSizes[i];
+                        writeTasks[i] = Task.Run(() => FilePartGenerate(partName, currentPosition, partSize, options));     
+                        currentPosition += partSize;
+
                     }
                     Task.WaitAll(writeTasks);
                 }
