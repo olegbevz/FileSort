@@ -8,6 +8,10 @@ namespace FileSort.Core
 
         private readonly long _size;
 
+        public const long KB = 1024;
+        public const long MB = KB * 1024;
+        public const long GB = MB * 1024;
+
         public static MemorySize Parse(string size)
         {
             for (int i = 0; i < _units.Length; i++)
