@@ -10,75 +10,82 @@ namespace FileSort
     public class FileSort
     {
         private readonly int _fileBufferSize;
-        private readonly OppositeMergeSort<FileLine> _sorter;
+        private readonly long _memoryBufferSize;
 
         public FileSort(int fileBufferSize, long memoryBufferSize)
         {
             _fileBufferSize = fileBufferSize;
-            _sorter = new OppositeMergeSort<FileLine>(memoryBufferSize, new FileLineSizeCalculator());
+            _memoryBufferSize = memoryBufferSize;
+            
         }
 
         public void Sort(string inputFileName, string outputFileName)
         {
             using (var fileStream = FileWithBuffer.OpenRead(inputFileName, _fileBufferSize))
             {
+                var sorter = new OppositeMergeSort<FileLine>(
+                    _memoryBufferSize,
+                    new FileLineSizeCalculator(),
+                    new FileLineReaderWriter(),
+                    outputFileName);
+
                 var inputFileEntries = new StreamEnumerable(fileStream).Select(FileLine.Parse);
-                var outputFileEntries = _sorter.Sort(inputFileEntries);
+                var outputFileEntries = sorter.Sort(inputFileEntries);
                 var outputLines = outputFileEntries.Select(x => x.ToString());
                 File.WriteAllLines(outputFileName, outputLines);
             }
         }
+    }
 
-        private class StreamEnumerable : IEnumerable<string>
+    public class StreamEnumerable : IEnumerable<string>
+    {
+        private readonly Stream _stream;
+
+        public StreamEnumerable(Stream stream)
         {
-            private readonly Stream _stream;
+            _stream = stream;
+        }
 
-            public StreamEnumerable(Stream stream)
+        public IEnumerator<string> GetEnumerator()
+        {
+            return new StreamEnumerator(_stream);
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this.GetEnumerator();
+        }
+
+        private class StreamEnumerator : IEnumerator<string>
+        {
+            private readonly StreamReader _streamReader;
+
+            public StreamEnumerator(Stream stream)
             {
-                _stream = stream;
+                _streamReader = new StreamReader(stream);
             }
 
-            public IEnumerator<string> GetEnumerator()
+            public string Current { get; private set; }
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose()
             {
-                return new StreamEnumerator(_stream);
+                _streamReader.Dispose();
             }
 
-            IEnumerator IEnumerable.GetEnumerator()
+            public bool MoveNext()
             {
-                return this.GetEnumerator();
+                if (_streamReader.EndOfStream)
+                    return false;
+
+                Current = _streamReader.ReadLine();
+                return true;
             }
 
-            private class StreamEnumerator : IEnumerator<string>
+            public void Reset()
             {
-                private readonly StreamReader _streamReader;
-
-                public StreamEnumerator(Stream stream)
-                {
-                    _streamReader = new StreamReader(stream);
-                }
-
-                public string Current { get; private set; }
-
-                object IEnumerator.Current => Current;
-
-                public void Dispose()
-                {
-                    _streamReader.Dispose();
-                }
-
-                public bool MoveNext()
-                {
-                    if (_streamReader.EndOfStream)
-                        return false;
-
-                    Current = _streamReader.ReadLine();
-                    return true;
-                }
-
-                public void Reset()
-                {
-                    throw new NotImplementedException();
-                }
+                throw new NotImplementedException();
             }
         }
     }

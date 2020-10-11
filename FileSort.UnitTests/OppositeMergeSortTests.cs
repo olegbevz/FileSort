@@ -10,7 +10,15 @@ namespace FileSort.UnitTests
     {
         private readonly OppositeMergeSort<int> _sorter = new OppositeMergeSort<int>(
             100 * MemorySize.MB, 
-            new ConstantSizeCalculator<int>(sizeof(int)));
+            new ConstantSizeCalculator<int>(sizeof(int)),
+            null,
+            null);
+
+        private readonly ChunkStack<int> _chunkStack = new ChunkStack<int>(
+            100 * MemorySize.MB,
+            new ConstantSizeCalculator<int>(sizeof(int)),
+            null,
+            null);
 
         [TestCase]
         public void ShouldSortSimpleNumberArray()
@@ -69,7 +77,7 @@ namespace FileSort.UnitTests
         [TestCase]
         public void ShouldSortNumberStringArray()
         {
-            var sorter = new OppositeMergeSort<FileLine>(10 * MemorySize.MB, new FileLineSizeCalculator());
+            var sorter = new OppositeMergeSort<FileLine>(10 * MemorySize.MB, new FileLineSizeCalculator(), null, null);
 
             var sourceArray = new FileLine[] 
             {
@@ -91,6 +99,49 @@ namespace FileSort.UnitTests
             var sortedArray = sorter.Sort(sourceArray);
 
             CollectionAssert.AreEqual(expectedArray, sortedArray);
+        }
+
+        [TestCase]
+        public void ShouldMergeSimpleArrays()
+        {
+            var leftArray = new[] { 1, 3, 5, 7, 9 };
+            var rightArray = new[] { 0, 2, 4, 6, 8, 10 };
+            var expectedArray = new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+            var arrayMerge = new ChunkStack<int>.MemoryChunkReference(leftArray.Length + rightArray.Length, 0);
+            OppositeMergeSort<int>.Merge(leftArray, rightArray, arrayMerge);
+
+            CollectionAssert.AreEqual(expectedArray, arrayMerge.ToArray());
+        }
+
+        [TestCase]
+        public void ShouldMergeEmptyArrayWithNotEmptyArray()
+        {
+            var leftArray = Array.Empty<int>();
+            var rightArray = new[] { 0, 2, 4, 6, 8, 10 };
+            var arrayMerge = new ChunkStack<int>.MemoryChunkReference(leftArray.Length + rightArray.Length, 0);
+            OppositeMergeSort<int>.Merge(leftArray, rightArray, arrayMerge);
+
+            CollectionAssert.AreEqual(rightArray, arrayMerge.ToArray());
+        }
+
+        [TestCase]
+        public void ShouldMergeNotEmptyArrayWithEmptyArray()
+        {
+            var leftArray = new[] { 1, 3, 5, 7, 9 };
+            var rightArray = Array.Empty<int>();
+            var arrayMerge = new ChunkStack<int>.MemoryChunkReference(leftArray.Length + rightArray.Length, 0);
+            OppositeMergeSort<int>.Merge(leftArray, rightArray, arrayMerge);
+
+            CollectionAssert.AreEqual(leftArray, arrayMerge.ToArray());
+        }
+
+        [TestCase]
+        public void ShouldMergeEmptyArrays()
+        {
+            var arrayMerge = new ChunkStack<int>.MemoryChunkReference(0, 0);
+            OppositeMergeSort<int>.Merge(Array.Empty<int>(), Array.Empty<int>(), arrayMerge);
+
+            CollectionAssert.IsEmpty(arrayMerge.ToArray());
         }
     }
 }
