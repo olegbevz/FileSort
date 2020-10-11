@@ -22,53 +22,88 @@ namespace FileGenerate
                 var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer).GetTotalBytes();
                 var memoryBufferSize = Math.Min((int)MemorySize.Parse(options.MemoryBuffer).GetTotalBytes(), fileSize);
 
-                var duplicateFrequency = options.Duplicates;
-                var duplicateCounter = 0;
-
                 using (var fileStream = FileWithBuffer.OpenWrite(options.FileName, fileBufferSize))
                 {
-                    var buffer = new byte[memoryBufferSize];
-                    using (var bufferStream = new MemoryStream(buffer))
+                    if (options.Duplicates > 0)
                     {
-                        using (var streamWriter = new StreamWriter(bufferStream))
-                        {
-                            while (fileStream.Position + memoryBufferSize < fileSize)
-                            {
-                                var writeDuplicate = duplicateCounter > 0;
-
-                                if (!writeDuplicate)
-                                {
-                                    WriteRandomStrings(streamWriter, memoryBufferSize, options.StringFactory);
-                                }
-
-                                fileStream.Write(buffer, 0, buffer.Length);
-
-                                if (!writeDuplicate)
-                                {
-                                    bufferStream.Seek(0, SeekOrigin.Begin);
-                                }
-
-                                duplicateCounter++;
-                                if (duplicateCounter >= duplicateFrequency)
-                                    duplicateCounter = 0;
-                            }
-                        }
+                        WriteRandomStringsWithDuplicates(
+                            fileStream,
+                            fileSize,
+                            memoryBufferSize,
+                            options.Duplicates,
+                            options.StringFactory);
                     }
-
-                    if (fileStream.Position < fileSize)
+                    else
                     {
-                        var remainedSize = fileSize - fileStream.Position;
-
-                        using(var streamWriter = new StreamWriter(fileStream))
-                        {
-                            WriteRandomStrings(streamWriter, remainedSize, options.StringFactory);
-                        }
+                        WriteRandomStringsWithoutDuplicates(
+                            fileStream,
+                            fileSize,
+                            options.StringFactory);
                     }
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+            }
+        }
+
+        private static void WriteRandomStringsWithoutDuplicates(
+            FileStream fileStream,
+            long fileSize,
+            StringFactory stringFactory)
+        {
+            using (var streamWriter = new StreamWriter(fileStream))
+            {
+                WriteRandomStrings(streamWriter, fileSize, stringFactory);
+            }
+        }
+
+        private static void WriteRandomStringsWithDuplicates(
+            FileStream fileStream,
+            long fileSize,
+            long memoryBufferSize,
+            int duplicatesFrequency,
+            StringFactory stringFactory)
+        {
+            var duplicateCounter = 0;
+
+            var buffer = new byte[memoryBufferSize];
+            using (var bufferStream = new MemoryStream(buffer))
+            {
+                using (var streamWriter = new StreamWriter(bufferStream))
+                {
+                    while (fileStream.Position + memoryBufferSize < fileSize)
+                    {
+                        var writeDuplicate = duplicateCounter > 0;
+
+                        if (!writeDuplicate)
+                        {
+                            WriteRandomStrings(streamWriter, memoryBufferSize, stringFactory);
+                        }
+
+                        fileStream.Write(buffer, 0, buffer.Length);
+
+                        if (!writeDuplicate)
+                        {
+                            bufferStream.Seek(0, SeekOrigin.Begin);
+                        }
+
+                        duplicateCounter++;
+                        if (duplicateCounter >= duplicatesFrequency)
+                            duplicateCounter = 0;
+                    }
+                }
+            }
+
+            if (fileStream.Position < fileSize)
+            {
+                var remainedSize = fileSize - fileStream.Position;
+
+                using (var streamWriter = new StreamWriter(fileStream))
+                {
+                    WriteRandomStrings(streamWriter, remainedSize, stringFactory);
+                }
             }
         }
 
