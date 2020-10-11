@@ -10,7 +10,7 @@ namespace FileSort.Core
             if (TryParse(data, out var entry))
                 return entry;
 
-            throw new ArgumentException($"Failed to parse '{data}'");
+            throw new ArgumentException($"Failed to parse line '{data}'.");
         }
 
         public static bool TryParse(string data, out FileLine fileEntry)

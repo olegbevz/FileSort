@@ -48,7 +48,7 @@ namespace FileCheck
                     }
                 }
 
-                Console.WriteLine($"File {options.FileName} has been successfully checked for lines order.");
+                Console.WriteLine($"File '{options.FileName}' has been successfully checked for lines order.");
                 return 0;
             }
             catch (Exception ex)
