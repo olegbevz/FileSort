@@ -18,20 +18,49 @@ namespace FileGenerate
         {
             try
             {
+                var fileSize = MemorySize.Parse(options.FileSize).GetTotalBytes();
                 var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer).GetTotalBytes();
+                var memoryBufferSize = Math.Min((int)MemorySize.Parse(options.MemoryBuffer).GetTotalBytes(), fileSize); 
 
                 using (var fileStream = FileWithBuffer.OpenWrite(options.FileName, fileBufferSize))
                 {
-                    using (var streamWriter = new StreamWriter(fileStream))
+                    var buffer = new byte[memoryBufferSize];
+                    using (var bufferStream = new MemoryStream(buffer))
                     {
-                        var randomStringSource = new RandomStringEnumerable(
-                                MemorySize.Parse(options.FileSize).GetTotalBytes(),
+                        using (var streamWriter = new StreamWriter(bufferStream))
+                        {
+                            while (fileStream.Position + memoryBufferSize < fileSize)
+                            {
+                                var randomStringSource = new RandomStringEnumerable(
+                                    memoryBufferSize,
+                                    streamWriter.Encoding,
+                                    streamWriter.NewLine,
+                                    CreateStringFactory(options.StringFactory));
+
+                                foreach (var line in randomStringSource)
+                                    streamWriter.WriteLine(line);
+
+                                fileStream.Write(buffer, 0, buffer.Length);
+                                bufferStream.Seek(0, SeekOrigin.Begin);
+                            }
+                        }
+                    }
+
+                    if (fileStream.Position < fileSize)
+                    {
+                        var remainedSize = fileSize - fileStream.Position;
+
+                        using(var streamWriter = new StreamWriter(fileStream))
+                        {
+                            var randomStringSource = new RandomStringEnumerable(
+                                remainedSize,
                                 streamWriter.Encoding,
                                 streamWriter.NewLine,
                                 CreateStringFactory(options.StringFactory));
 
-                        foreach (var line in randomStringSource)
-                            streamWriter.WriteLine(line);
+                            foreach (var line in randomStringSource)
+                                streamWriter.WriteLine(line);
+                        }
                     }
                 }
             }
