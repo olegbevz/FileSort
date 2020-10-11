@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChunkStack.cs" />
     <Compile Include="FileSort.cs" />
     <Compile Include="FileSortOptions.cs" />
     <Compile Include="OppositeMergeSort.cs" />

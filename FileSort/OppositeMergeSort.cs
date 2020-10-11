@@ -8,7 +8,7 @@ namespace FileSort
     {
         public T[] Sort<T>(IEnumerable<T> source) where T : IComparable
         {
-            var chunkStack = new Stack<T[]>();
+            var chunkStack = new ChunkStack<T>();
             int chunkSize = 2;
             var chunk = new T[chunkSize];
             int chunkIndex = 0;
@@ -22,20 +22,20 @@ namespace FileSort
 
                 if (chunkIndex == chunkSize)
                 {
-                    if (chunkStack.Count == 0 || chunkStack.Peek().Length != chunk.Length)
+                    if (chunkStack.Count == 0 || chunkStack.LastChunkLength != chunk.Length)
                     {
                         Merger(chunk, 0, (chunk.Length / 2) - 1, chunk.Length - 1);
                         chunkStack.Push(chunk);
                     }
-                    else if (chunkStack.Peek().Length == chunk.Length)
+                    else if (chunkStack.LastChunkLength == chunk.Length)
                     {
                         Merger(chunk, 0, (chunk.Length / 2) - 1, chunk.Length - 1);
 
-                        while (chunkStack.Count > 0 && chunkStack.Peek().Length == chunk.Length)
+                        while (chunkStack.Count > 0 && chunkStack.LastChunkLength == chunk.Length)
                         {
                             chunk = chunkStack.Pop().Concat(chunk).ToArray();
                             Merger(chunk, 0, (chunk.Length / 2) - 1, chunk.Length - 1);
-                            if (chunkStack.Count == 0 || chunkStack.Peek().Length != chunk.Length)
+                            if (chunkStack.Count == 0 || chunkStack.LastChunkLength != chunk.Length)
                             {
                                 chunkStack.Push(chunk);
                                 break;
