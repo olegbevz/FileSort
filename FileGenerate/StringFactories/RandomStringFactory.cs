@@ -4,12 +4,20 @@ namespace FileGenerate
 {
     public class RandomStringFactory : RandomStringFactoryBase
     {
-        private static Random _random = new Random();
+        private readonly Random _random;
         private readonly int _maxNumber;
         private readonly int _maxSentenceLength;
 
+        public RandomStringFactory(Random random, int maxNumber = 1000000, int maxSentenceLength = 10)
+        {
+            _random = random;
+            _maxNumber = maxNumber;
+            _maxSentenceLength = maxSentenceLength;
+        }
+
         public RandomStringFactory(int maxNumber = 1000000, int maxSentenceLength = 10)
         {
+            _random = new Random();
             _maxNumber = maxNumber;
             _maxSentenceLength = maxSentenceLength;
         }
