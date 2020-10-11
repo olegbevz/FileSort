@@ -20,7 +20,7 @@ namespace FileSort.Core
                 fileName,
                 FileMode.Create,
                 FileAccess.Write,
-                FileShare.None,
+                FileShare.Write,
                 bufferSize);
         }
     }

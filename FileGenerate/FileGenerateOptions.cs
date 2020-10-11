@@ -12,5 +12,7 @@ namespace FileGenerate
         public StringFactory StringFactory { get; set; }
         [Option("file-buffer", Required = false, Default = "1MB", HelpText = "Size of FileStream internal buffer")]
         public string FileBuffer { get; set; }
+        [Option('p', "parts", Required = false, Default = 4, HelpText = "Number of file parts for cuncurrent generation")]
+        public int Parts { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using CommandLine;
 using FileSort.Core;
 
@@ -19,25 +20,50 @@ namespace FileGenerate
             try
             {
                 var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer).GetTotalBytes();
+                var totalSize = MemorySize.Parse(options.FileSize).GetTotalBytes();
 
-                using (var fileStream = FileWithBuffer.OpenWrite(options.FileName, fileBufferSize))
+                if (options.Parts == 1)
                 {
-                    using (var streamWriter = new StreamWriter(fileStream))
+                    FilePartGenerate(options.FileName, 0, totalSize, options);
+                }
+                else
+                {
+                    var partSize = totalSize / options.Parts;
+                    var writeTasks = new Task[options.Parts];
+                    for (int i = 0; i < options.Parts; i++)
                     {
-                        var randomStringSource = new RandomStringEnumerable(
-                                MemorySize.Parse(options.FileSize).GetTotalBytes(),
-                                streamWriter.Encoding,
-                                streamWriter.NewLine,
-                                CreateStringFactory(options.StringFactory));
-
-                        foreach (var line in randomStringSource)
-                            streamWriter.WriteLine(line);
+                        long startPosition = i * partSize; 
+                        writeTasks[i] = Task.Run(() => FilePartGenerate(options.FileName, startPosition, partSize, options));
+                        
                     }
+                    Task.WaitAll(writeTasks);
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+            }
+        }
+
+        private static void FilePartGenerate(string fileName, long startPosition, long partSize, FileGenerateOptions options)
+        {
+            var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer).GetTotalBytes();
+
+            using (var fileStream = FileWithBuffer.OpenWrite(fileName, fileBufferSize))
+            {
+                fileStream.Seek(startPosition, SeekOrigin.Begin);
+
+                using (var streamWriter = new StreamWriter(fileStream))
+                {
+                    var randomStringSource = new RandomStringEnumerable(
+                            partSize,
+                            streamWriter.Encoding,
+                            streamWriter.NewLine,
+                            CreateStringFactory(options.StringFactory));
+
+                    foreach (var line in randomStringSource)
+                        streamWriter.WriteLine(line);
+                }
             }
         }
 
