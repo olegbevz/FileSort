@@ -14,5 +14,7 @@ namespace FileGenerate
         public string FileBuffer { get; set; }
         [Option("memory-buffer", Required = false, Default = "100MB", HelpText = "Size of memory buffer")]
         public string MemoryBuffer { get; set; }
+        [Option("duplicates", Required = false, Default = 10, HelpText = "Amount of duplicated blocks after each random block")]
+        public int Duplicates { get; set; }
     }
 }

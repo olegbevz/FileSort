@@ -22,7 +22,7 @@ namespace FileGenerate
                 var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer).GetTotalBytes();
                 var memoryBufferSize = Math.Min((int)MemorySize.Parse(options.MemoryBuffer).GetTotalBytes(), fileSize);
 
-                var duplicateFrequency = 10;
+                var duplicateFrequency = options.Duplicates;
                 var duplicateCounter = 0;
 
                 using (var fileStream = FileWithBuffer.OpenWrite(options.FileName, fileBufferSize))
@@ -49,7 +49,7 @@ namespace FileGenerate
                                 }
 
                                 duplicateCounter++;
-                                if (duplicateCounter == duplicateFrequency)
+                                if (duplicateCounter >= duplicateFrequency)
                                     duplicateCounter = 0;
                             }
                         }
