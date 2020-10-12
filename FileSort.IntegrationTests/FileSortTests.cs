@@ -13,11 +13,15 @@ namespace FileSort.IntegrationTests
         [TestCase("simple.txt", "simple_sorted.txt", "simple_expected.txt", TestName = "ShouldSortSimpleFile")]
         [TestCase("oneline.txt", "oneline_sorted.txt", "oneline_expected.txt", TestName = "ShouldSortOneLineFile")]
         [TestCase("empty.txt", "empty_sorted.txt", "empty_expected.txt", TestName = "ShouldSortEmptyFile")]
+        [TestCase("six_line.txt", "six_line_sorted.txt", "six_line_expected.txt", TestName = "ShouldSortSixLineFile")]
+        [TestCase("500bytes.txt", "500bytes_sorted.txt", "500bytes_expected.txt", TestName = "ShouldSort500BytesFile")]
         public void ShouldSortFileFromContent(string inputFileName, string outputFileName, string expectedFileName)
         {
             var process = RunProcess(
                 "FileSort.exe", 
                 $"{Path.Combine("Content", inputFileName)} {Path.Combine("Content", outputFileName)}");
+
+            ProcessAssert.HasZeroExitCode(process, $"File '{inputFileName}' sort failed.");
 
             FileAssert.AreEqual(
                 Path.Combine(process.StartInfo.WorkingDirectory, "Content", expectedFileName),
@@ -28,11 +32,16 @@ namespace FileSort.IntegrationTests
         [TestCase("oneline.txt", "oneline_sorted.txt", "oneline_expected.txt", TestName = "ShouldSortOneLineFileWithoutMemory")]
         [TestCase("empty.txt", "empty_sorted.txt", "empty_expected.txt", TestName = "ShouldSortEmptyFileWithoutMemory")]
         [TestCase("four_line.txt", "four_line_sorted.txt", "four_line_expected.txt", TestName = "ShouldSortFourLineFileWithoutMemory")]
+        [TestCase("six_line.txt", "six_line_sorted.txt", "six_line_expected.txt", TestName = "ShouldSortSixLineFileWithoutMemory")]
+        [TestCase("eight_line.txt", "eight_line_sorted.txt", "eight_line_expected.txt", TestName = "ShouldSortEightLineFileWithoutMemory")]
+        [TestCase("500bytes.txt", "500bytes_sorted.txt", "500bytes_expected.txt", TestName = "ShouldSort500BytesFileWithoutMemory")]
         public void ShouldSortFileWithoutMemory(string inputFileName, string outputFileName, string expectedFileName)
         {
             var process = RunProcess(
                 "FileSort.exe",
                 $"{Path.Combine("Content", inputFileName)} {Path.Combine("Content", outputFileName)} --memory-buffer 0");
+
+            ProcessAssert.HasZeroExitCode(process, $"File '{inputFileName}' sort failed.");
 
             FileAssert.AreEqual(
                 Path.Combine(process.StartInfo.WorkingDirectory, "Content", expectedFileName),
@@ -60,6 +69,8 @@ namespace FileSort.IntegrationTests
                 "FileGenerate.exe",
                 $"{inputFileName} -s {fileSize}");
 
+            ProcessAssert.HasZeroExitCode(generateProcess, $"File '{inputFileName}' generation failed.");
+
             inputFileName = Path.Combine(generateProcess.StartInfo.WorkingDirectory, inputFileName);
             outputFileName = Path.Combine(generateProcess.StartInfo.WorkingDirectory, outputFileName);
 
@@ -77,6 +88,8 @@ namespace FileSort.IntegrationTests
                 "FileSort.exe",
                 $"{inputFileName} {outputFileName}");
 
+            ProcessAssert.HasZeroExitCode(generateProcess, $"File '{inputFileName}' sort failed.");
+
             Console.WriteLine($"File '{outputFileName}' was sorted in {sortProcess.TotalProcessorTime}.");
 
             actualFileSize = new FileInfo(outputFileName).Length;
@@ -92,7 +105,7 @@ namespace FileSort.IntegrationTests
 
             Console.WriteLine($"File '{outputFileName}' was checked in {checkProcess.TotalProcessorTime}.");
 
-            Assert.AreEqual(0, checkProcess.ExitCode, $"File '{inputFileName}' was not properly sorted or check failed.");
+            ProcessAssert.HasZeroExitCode(checkProcess, $"File '{inputFileName}' was not properly sorted or check failed.");         
         }
 
         private Process RunProcess(string executable, string arguments)

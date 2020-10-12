@@ -28,19 +28,24 @@ namespace FileSort
                 if (chunkIndex == ChunkPairSize)
                 {
                     chunk = Merge(chunk[0], chunk[1]);
-                    if (_chunkStack.Count == 0 || _chunkStack.LastChunkLength != chunk.Length)
+                    if (_chunkStack.LastChunkLength != chunk.Length)
                     {
                         _chunkStack.Push(chunk);
                     }
-                    else if (_chunkStack.LastChunkLength == chunk.Length)
+                    else
                     {
                         var chunkReference = _chunkStack.CreateChunk(chunk);
-                        while (_chunkStack.Count > 0 && _chunkStack.LastChunkLength == chunkReference.Count)
+                        while (_chunkStack.LastChunkLength == chunkReference.Count)
                         {
-                            chunkReference = Merge(_chunkStack.Pop(), chunkReference, _chunkStack);
-                            if (_chunkStack.Count == 0 || _chunkStack.LastChunkLength != chunkReference.Count)
+                            chunkReference = Merge(chunkReference, _chunkStack.Pop(), _chunkStack);
+                            var previousChunkLength = _chunkStack.LastChunkLength;
+                            _chunkStack.Push(chunkReference);
+                            if (previousChunkLength == chunkReference.Count)
                             {
-                                _chunkStack.Push(chunkReference);
+                                chunkReference = _chunkStack.Pop();
+                            }
+                            else
+                            {
                                 break;
                             }
                         }

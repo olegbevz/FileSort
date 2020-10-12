@@ -13,7 +13,7 @@ namespace FileSort
 
         private long _currentPosition = 0;
 
-        public bool IsEmpty { get { return _currentPosition == 0; } }
+        public bool IsEmpty { get { return _currentPosition > 0; } }
 
         public ChunkFileStorage(string fileName, int fileBuffer, IChunkReaderWriter<T> readerWriter)
         {

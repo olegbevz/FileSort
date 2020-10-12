@@ -34,10 +34,13 @@ namespace FileSort
             }
         }
 
-        public int LastChunkLength
+        public int? LastChunkLength
         {
             get
             {
+                if (_stack.Count == 0)
+                    return null;
+
                 return _stack.Peek().Count;
             }
         }
