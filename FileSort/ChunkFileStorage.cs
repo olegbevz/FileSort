@@ -13,7 +13,7 @@ namespace FileSort
 
         private long _currentPosition = 0;
 
-        public bool IsEmpty { get { return _currentPosition > 0; } }
+        public bool IsEmpty { get { return _currentPosition == 0; } }
 
         public ChunkFileStorage(string fileName, int fileBuffer, IChunkReaderWriter<T> readerWriter)
         {
@@ -27,10 +27,14 @@ namespace FileSort
             using (var fileStream = FileWithBuffer.OpenAppend(_fileName, _fileBuffer))
             {
                 fileStream.Seek(_currentPosition, SeekOrigin.Begin);
-                _readerWriter.WriteToStream(fileStream, source);
-                var size = fileStream.Position - _currentPosition;
-                _currentPosition = fileStream.Position;
-                return size;
+                using (var streamWriter = new StreamWriter(fileStream))
+                {
+                    _readerWriter.WriteToStream(streamWriter, source);
+                    streamWriter.Flush();
+                    var size = fileStream.Position - _currentPosition;
+                    _currentPosition = fileStream.Position;
+                    return size;
+                }
             }
         }
 

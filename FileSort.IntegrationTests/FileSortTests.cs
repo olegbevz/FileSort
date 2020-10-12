@@ -24,7 +24,10 @@ namespace FileSort.IntegrationTests
                 Path.Combine(process.StartInfo.WorkingDirectory, "Content", outputFileName));
         }
 
-        [TestCase("four_line.txt", "four_line_sorted.txt", "four_line_expected.txt")]
+        [TestCase("simple.txt", "simple_sorted.txt", "simple_expected.txt", TestName = "ShouldSortSimpleFileWithoutMemory")]
+        [TestCase("oneline.txt", "oneline_sorted.txt", "oneline_expected.txt", TestName = "ShouldSortOneLineFileWithoutMemory")]
+        [TestCase("empty.txt", "empty_sorted.txt", "empty_expected.txt", TestName = "ShouldSortEmptyFileWithoutMemory")]
+        [TestCase("four_line.txt", "four_line_sorted.txt", "four_line_expected.txt", TestName = "ShouldSortFourLineFileWithoutMemory")]
         public void ShouldSortFileWithoutMemory(string inputFileName, string outputFileName, string expectedFileName)
         {
             var process = RunProcess(
@@ -44,7 +47,7 @@ namespace FileSort.IntegrationTests
         [TestCase("100KB", TestName = "ShouldSort100KBRandomFile")]        
         [TestCase("1MB", TestName = "ShouldSort1MBRandomFile")]
         [TestCase("10mb", TestName = "ShouldSort10MBRandomFile")]
-        [TestCase("100MB", TestName = "ShouldSort100MBRandomFile")]
+        [TestCase("100MB", TestName = "ShouldSort100MBRandomFile", IgnoreReason = "Test is too long. Should be run manually")]
         [TestCase("1GB", TestName = "ShouldSort1GBRandomFile", IgnoreReason = "Test is too long. Should be run manually")]
         [TestCase("10GB", TestName = "ShouldSort10GBRandomFile", IgnoreReason = "Test is too long. Should be run manually")]
         [TestCase("100GB", TestName = "ShouldSort100GBRandomFile", IgnoreReason = "Test is too long. Should be run manually")]

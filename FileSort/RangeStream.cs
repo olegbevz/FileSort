@@ -10,13 +10,12 @@ namespace FileSort
         private readonly long _length;
         private readonly long _endPosition;
 
-        public RangeStream(Stream underlyingStream, long startPosititon, long length)
+        public RangeStream(Stream underlyingStream, long startPosititon, long endPosition)
         {
             _underlyingStream = underlyingStream;
-            _underlyingStream.Seek(_startPosititon, SeekOrigin.Begin);
             _startPosititon = startPosititon;
-            _length = length;
-            _endPosition = startPosititon + length;
+            _length = endPosition - startPosititon;
+            _endPosition = endPosition;
         }
 
         public override bool CanRead => true;
@@ -27,7 +26,11 @@ namespace FileSort
 
         public override long Length => _length;
 
-        public override long Position { get => _underlyingStream.Position; set => _underlyingStream.Position = value; }
+        public override long Position
+        {
+            get => _underlyingStream.Position;
+            set => _underlyingStream.Position = value;
+        }
 
         protected override void Dispose(bool disposing)
         {
@@ -41,6 +44,9 @@ namespace FileSort
 
         public override int Read(byte[] buffer, int offset, int count)
         {
+            if (_underlyingStream.Position < _startPosititon)
+                _underlyingStream.Seek(_startPosititon, SeekOrigin.Begin);
+
             if (_underlyingStream.Position + count >= _endPosition)
                 count = (int)(_endPosition - _underlyingStream.Position);
 

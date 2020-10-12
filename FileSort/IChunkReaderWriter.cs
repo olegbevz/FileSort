@@ -5,7 +5,7 @@ namespace FileSort
 {
     public interface IChunkReaderWriter<T>
     {
-        void WriteToStream(Stream stream, IEnumerable<T> source);
+        void WriteToStream(StreamWriter streamWriter, IEnumerable<T> source);
         IEnumerable<T> ReadFromStream(Stream stream);
     }
 }
