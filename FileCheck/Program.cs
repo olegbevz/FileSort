@@ -27,13 +27,14 @@ namespace FileCheck
                 {
                     using (var streamReader = new StreamReader(fileStream))
                     {
-                        string previousLine = null;
+                        bool compareFileLines = !options.OnlyCheckFormat;
+                        string previousLine = null;                        
 
                         while (!streamReader.EndOfStream)
                         {
                             var currentLine = streamReader.ReadLine();
 
-                            if (previousLine != null)
+                            if (compareFileLines && previousLine != null)
                             {
                                 if (FileLine.Parse(previousLine).CompareTo(FileLine.Parse(currentLine)) > 0)
                                 {

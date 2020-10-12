@@ -133,7 +133,7 @@ namespace FileSort
             {
                 sizeCounter += chunk.MemorySize;
 
-                if (sizeCounter > _bufferSize)
+                if (sizeCounter > _bufferSize && !(chunk is FileChunkReference))
                 {
                     array[arrayIndex] = CreateFileChunkReference(chunk.GetValue().ToArray());
                     _currentSize -= chunk.MemorySize;
