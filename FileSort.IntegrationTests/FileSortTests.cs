@@ -24,6 +24,18 @@ namespace FileSort.IntegrationTests
                 Path.Combine(process.StartInfo.WorkingDirectory, "Content", outputFileName));
         }
 
+        [TestCase("four_line.txt", "four_line_sorted.txt", "four_line_expected.txt")]
+        public void ShouldSortFileWithoutMemory(string inputFileName, string outputFileName, string expectedFileName)
+        {
+            var process = RunProcess(
+                "FileSort.exe",
+                $"{Path.Combine("Content", inputFileName)} {Path.Combine("Content", outputFileName)} --memory-buffer 0");
+
+            FileAssert.AreEqual(
+                Path.Combine(process.StartInfo.WorkingDirectory, "Content", expectedFileName),
+                Path.Combine(process.StartInfo.WorkingDirectory, "Content", outputFileName));
+        }
+
         [TestCase("0mb", TestName = "ShouldSort0MBRandomFile")]
         [TestCase("15bytes", TestName = "ShouldSort15BytesRandomFile")]
         [TestCase("100bytes", TestName = "ShouldSort100BytesRandomFile")]

@@ -23,16 +23,38 @@ namespace FileSort
         {
             using (var fileStream = FileWithBuffer.OpenRead(inputFileName, _fileBufferSize))
             {
-                var sorter = new OppositeMergeSort<FileLine>(
+                var readerWriter = new FileLineReaderWriter();
+
+                var targetChunkStorage = new ChunkFileStorage<FileLine>(
+                    outputFileName, 
+                    _fileBufferSize,
+                    readerWriter);
+
+                var tempFileName = Path.Combine(
+                    Path.GetDirectoryName(outputFileName),
+                    $"{Path.GetFileNameWithoutExtension(outputFileName)}_temp{Path.GetExtension(outputFileName)}");
+
+                var tempChunkStorage = new ChunkFileStorage<FileLine>(
+                    tempFileName,
+                    _fileBufferSize,
+                    readerWriter);
+
+                var chunkStack = new ChunkStack<FileLine>(
                     _memoryBufferSize,
                     new FileLineSizeCalculator(),
-                    new FileLineReaderWriter(),
-                    outputFileName);
+                    targetChunkStorage,
+                    tempChunkStorage);
+
+                var sorter = new OppositeMergeSort<FileLine>(chunkStack);
 
                 var inputFileEntries = new StreamEnumerable(fileStream).Select(FileLine.Parse);
                 var outputFileEntries = sorter.Sort(inputFileEntries);
-                var outputLines = outputFileEntries.Select(x => x.ToString());
-                File.WriteAllLines(outputFileName, outputLines);
+
+                if (targetChunkStorage.IsEmpty)
+                {
+                    var outputLines = outputFileEntries.Select(x => x.ToString());
+                    File.WriteAllLines(outputFileName, outputLines);
+                }
             }
         }
     }

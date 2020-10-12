@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace FileSort
 {
@@ -8,22 +7,14 @@ namespace FileSort
     {
         private const int ChunkPairSize = 2;
 
-        private readonly long _bufferSize;
-        private readonly IChunkReaderWriter<T> _readerWriter;
-        private readonly ISizeCalculator<T> _sizeCalculator;
-        private readonly string _fileName;
-
-        public OppositeMergeSort(long bufferSize, ISizeCalculator<T> sizeCalculator, IChunkReaderWriter<T> readerWriter, string fileName)
+        private readonly ChunkStack<T> _chunkStack;
+        public OppositeMergeSort(ChunkStack<T> chunkStack)
         {
-            _bufferSize = bufferSize;
-            _readerWriter = readerWriter;
-            _sizeCalculator = sizeCalculator;
-            _fileName = fileName;
+            _chunkStack = chunkStack;
         }
 
         public IEnumerable<T> Sort(IEnumerable<T> source)
         {
-            var chunkStack = new ChunkStack<T>(_bufferSize, _sizeCalculator, _readerWriter, _fileName);
             var chunk = new T[ChunkPairSize];
             int chunkIndex = 0;
             int targetIndex = 0;
@@ -37,19 +28,19 @@ namespace FileSort
                 if (chunkIndex == ChunkPairSize)
                 {
                     chunk = Merge(chunk[0], chunk[1]);
-                    if (chunkStack.Count == 0 || chunkStack.LastChunkLength != chunk.Length)
-                    {                        
-                        chunkStack.Push(chunk);
-                    }
-                    else if (chunkStack.LastChunkLength == chunk.Length)
+                    if (_chunkStack.Count == 0 || _chunkStack.LastChunkLength != chunk.Length)
                     {
-                        var chunkReference = chunkStack.CreateChunk(chunk);
-                        while (chunkStack.Count > 0 && chunkStack.LastChunkLength == chunkReference.Count)
+                        _chunkStack.Push(chunk);
+                    }
+                    else if (_chunkStack.LastChunkLength == chunk.Length)
+                    {
+                        var chunkReference = _chunkStack.CreateChunk(chunk);
+                        while (_chunkStack.Count > 0 && _chunkStack.LastChunkLength == chunkReference.Count)
                         {
-                            chunkReference = Merge(chunkStack.Pop(), chunkReference, chunkStack);
-                            if (chunkStack.Count == 0 || chunkStack.LastChunkLength != chunkReference.Count)
+                            chunkReference = Merge(_chunkStack.Pop(), chunkReference, _chunkStack);
+                            if (_chunkStack.Count == 0 || _chunkStack.LastChunkLength != chunkReference.Count)
                             {
-                                chunkStack.Push(chunkReference);
+                                _chunkStack.Push(chunkReference);
                                 break;
                             }
                         }
@@ -62,20 +53,20 @@ namespace FileSort
 
             if (chunkIndex > 0 && chunkIndex < ChunkPairSize)
             {
-                chunkStack.Push(new T[] { chunk[0] });
+                _chunkStack.Push(new T[] { chunk[0] });
             }
 
-            while (chunkStack.Count > 1)
+            while (_chunkStack.Count > 1)
             {
-                var leftChunk = chunkStack.Pop();
-                var chunkReference = Merge(leftChunk, chunkStack.Pop(), chunkStack);
-                chunkStack.Push(chunkReference);
+                var leftChunk = _chunkStack.Pop();
+                var chunkReference = Merge(leftChunk, _chunkStack.Pop(), _chunkStack);
+                _chunkStack.Push(chunkReference);
             }
 
-            if (chunkStack.Count == 0)
+            if (_chunkStack.Count == 0)
                 return new T[0];
 
-            return chunkStack.Pop().Value;
+            return _chunkStack.Pop().GetValue();
         }
 
         public static T[] Merge(T left, T right)
@@ -86,14 +77,14 @@ namespace FileSort
             return new T[2] { right, left };
         }
 
-        public static IChunkWriter<T> Merge(IChunkReference<T> left, IChunkReference<T> right, ChunkStack<T> chunkStack)
+        public static IWritableChunkReference<T> Merge(IChunkReference<T> left, IChunkReference<T> right, ChunkStack<T> chunkStack)
         {
             var chunkWriter = chunkStack.CreateChunkForMerge(left, right);
-            Merge(left.Value, right.Value, chunkWriter);
+            Merge(left.GetValue(), right.GetValue(), chunkWriter);
             return chunkWriter;
         }
 
-        public static void Merge(IEnumerable<T> left, IEnumerable<T> right, IChunkWriter<T> chunkWriter)
+        public static void Merge(IEnumerable<T> left, IEnumerable<T> right, IWritableChunkReference<T> chunkWriter)
         {
             using (var leftEnumerator = left.GetEnumerator())
             using (var rightEnumerator = right.GetEnumerator())

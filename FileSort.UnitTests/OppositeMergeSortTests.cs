@@ -8,17 +8,11 @@ namespace FileSort.UnitTests
     [TestFixture]
     public class OppositeMergeSortTests
     {
-        private readonly OppositeMergeSort<int> _sorter = new OppositeMergeSort<int>(
-            100 * MemorySize.MB, 
-            new ConstantSizeCalculator<int>(sizeof(int)),
-            null,
-            null);
-
-        private readonly ChunkStack<int> _chunkStack = new ChunkStack<int>(
+        private readonly OppositeMergeSort<int> _sorter = new OppositeMergeSort<int>(new ChunkStack<int>(
             100 * MemorySize.MB,
             new ConstantSizeCalculator<int>(sizeof(int)),
             null,
-            null);
+            null));
 
         [TestCase]
         public void ShouldSortSimpleNumberArray()
@@ -77,7 +71,11 @@ namespace FileSort.UnitTests
         [TestCase]
         public void ShouldSortNumberStringArray()
         {
-            var sorter = new OppositeMergeSort<FileLine>(10 * MemorySize.MB, new FileLineSizeCalculator(), null, null);
+            var sorter = new OppositeMergeSort<FileLine>(new ChunkStack<FileLine>(
+                100 * MemorySize.MB,
+                new FileLineSizeCalculator(),
+                null,
+                null));
 
             var sourceArray = new FileLine[] 
             {
