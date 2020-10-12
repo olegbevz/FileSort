@@ -62,10 +62,11 @@ namespace FileSort
         private void Push(IEnumerable<T> chunk, int count, long chunkSize)
         {
             EnsureStakSize(chunkSize);
+
             IChunkReference<T> chunkReference;
             if (chunkSize > _bufferSize)
             {
-                chunkReference = WriteToFile(chunk, count);
+                chunkReference = CreateFileChunkReference(chunk, count);
             }
             else
             {
@@ -79,7 +80,7 @@ namespace FileSort
 
         private void EnsureStakSize(long chunkSize)
         {
-            if (_currentSize + chunkSize > _bufferSize && _stack.Count > 0 && !_stack.All(x => x is FileChunkReference))
+            if (_currentSize + chunkSize > _bufferSize && !_stack.All(x => x is FileChunkReference))
             {
                 ResizeStack(chunkSize);
             }
@@ -121,6 +122,9 @@ namespace FileSort
 
         private void ResizeStack(long reqiredSpaceToAdd)
         {
+            if (_stack.Count == 0)
+                return;
+
             var sizeCounter = reqiredSpaceToAdd;
             var array = new IChunkReference<T>[_stack.Count];
             var arrayIndex = _stack.Count - 1;
@@ -131,7 +135,7 @@ namespace FileSort
 
                 if (sizeCounter > _bufferSize)
                 {
-                    array[arrayIndex] = WriteToFile(chunk.GetValue().ToArray());
+                    array[arrayIndex] = CreateFileChunkReference(chunk.GetValue().ToArray());
                     _currentSize -= chunk.MemorySize;
                 }
                 else
@@ -145,12 +149,12 @@ namespace FileSort
             _stack = new Stack<IChunkReference<T>>(array);
         }
 
-        private FileChunkReference WriteToFile(T[] chunk)
+        private FileChunkReference CreateFileChunkReference(T[] chunk)
         {
-            return WriteToFile(chunk, chunk.Length);
+            return CreateFileChunkReference(chunk, chunk.Length);
         }
 
-        private FileChunkReference WriteToFile(IEnumerable<T> chunk, int count)
+        private FileChunkReference CreateFileChunkReference(IEnumerable<T> chunk, int count)
         {
             var size = _chunkStorage.Push(chunk);
             return new FileChunkReference(_chunkStorage, size, count);
