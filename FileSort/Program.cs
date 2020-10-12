@@ -11,7 +11,8 @@ namespace FileSort
             var exitCode = 0;
 
             Parser.Default.ParseArguments<FileSortOptions>(args)
-                .WithParsed(options => exitCode = HandleFileSort(options));
+                .WithParsed(options => exitCode = HandleFileSort(options))
+                .WithNotParsed(options => exitCode = 1);
 
             return exitCode;
         }

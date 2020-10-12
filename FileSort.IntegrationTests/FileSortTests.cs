@@ -53,6 +53,7 @@ namespace FileSort.IntegrationTests
         [TestCase("100bytes", TestName = "ShouldSort100BytesRandomFile")]
         [TestCase("1kb", TestName = "ShouldSort1KBRandomFile")]
         [TestCase("10KB", TestName = "ShouldSort10KBRandomFile")]
+        [TestCase("10kb", "--memory-buffer 0", TestName = "ShouldSort1KBRandomFileWithoutMemory")]
         [TestCase("100KB", TestName = "ShouldSort100KBRandomFile")]        
         [TestCase("1MB", TestName = "ShouldSort1MBRandomFile")]
         [TestCase("10mb", TestName = "ShouldSort10MBRandomFile")]
@@ -60,7 +61,7 @@ namespace FileSort.IntegrationTests
         [TestCase("1GB", TestName = "ShouldSort1GBRandomFile", IgnoreReason = "Test is too long. Should be run manually")]
         [TestCase("10GB", TestName = "ShouldSort10GBRandomFile", IgnoreReason = "Test is too long. Should be run manually")]
         [TestCase("100GB", TestName = "ShouldSort100GBRandomFile", IgnoreReason = "Test is too long. Should be run manually")]
-        public void ShouldSortGeneratedFile(string fileSize)
+        public void ShouldSortGeneratedFile(string fileSize, string sortArguments = null)
         {
             var inputFileName = Path.Combine("Content", fileSize + ".txt");
             var outputFileName = Path.Combine("Content", fileSize + "_sorted.txt");
@@ -86,9 +87,9 @@ namespace FileSort.IntegrationTests
 
             var sortProcess = RunProcess(
                 "FileSort.exe",
-                $"{inputFileName} {outputFileName}");
+                $"{inputFileName} {outputFileName} {sortArguments}");
 
-            ProcessAssert.HasZeroExitCode(generateProcess, $"File '{inputFileName}' sort failed.");
+            ProcessAssert.HasZeroExitCode(sortProcess, $"File '{inputFileName}' sort failed.");
 
             Console.WriteLine($"File '{outputFileName}' was sorted in {sortProcess.TotalProcessorTime}.");
 
