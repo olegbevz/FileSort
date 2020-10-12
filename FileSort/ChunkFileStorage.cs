@@ -14,6 +14,7 @@ namespace FileSort
         private long _currentPosition = 0;
         private long _currentSize = 0;
 
+        public long Size { get { return _currentSize; } }
         public bool IsEmpty { get { return _currentSize == 0; } }
 
         public ChunkFileStorage(string fileName, int fileBuffer, IChunkReaderWriter<T> readerWriter)
@@ -49,6 +50,51 @@ namespace FileSort
             var rangeStream = new RangeStream(fileStream, _currentPosition - size, _currentPosition);
             _currentPosition -= size;
             return _readerWriter.ReadFromStream(rangeStream);
+        }
+
+        public IChunkStorageWriter<T> GetWriter()
+        {
+            return new ChunkFileStorageWriter(
+                FileWithBuffer.OpenAppend(_fileName, _fileBuffer),
+                _readerWriter,
+                this);
+        }
+
+        private class ChunkFileStorageWriter : IChunkStorageWriter<T>
+        {
+            private readonly FileStream _fileStream;
+            private readonly StreamWriter _streamWriter;
+            private readonly long _startPosition;
+            private long _endPosition;
+            private readonly IChunkReaderWriter<T> _chunkWriter;
+            private readonly ChunkFileStorage<T> _chunkFileStorage;
+
+            public ChunkFileStorageWriter(FileStream fileStream, IChunkReaderWriter<T> chunkWriter, ChunkFileStorage<T> chunkFileStorage)
+            {
+                _fileStream = fileStream;
+                _streamWriter = new StreamWriter(fileStream);
+                _startPosition = fileStream.Position;
+                _chunkWriter = chunkWriter;
+                _chunkFileStorage = chunkFileStorage;
+            }
+
+            public void Write(T value)
+            {
+                _chunkWriter.WriteToStream(_streamWriter, new[] { value });
+            }
+
+            public long Complete()
+            {
+                _streamWriter.Flush();
+                _endPosition = _fileStream.Position;
+
+                _chunkFileStorage._currentPosition = _fileStream.Position;
+                _chunkFileStorage._currentSize = Math.Max(_fileStream.Position, _chunkFileStorage._currentSize);
+
+                _streamWriter.Dispose();
+
+                return _endPosition - _startPosition;
+            }
         }
     }
 }

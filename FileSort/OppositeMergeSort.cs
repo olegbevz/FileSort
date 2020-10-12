@@ -86,6 +86,7 @@ namespace FileSort
         {
             var chunkWriter = chunkStack.CreateChunkForMerge(left, right);
             Merge(left.GetValue(), right.GetValue(), chunkWriter);
+            chunkWriter.Complete();
             return chunkWriter;
         }
 

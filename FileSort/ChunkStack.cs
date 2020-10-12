@@ -195,16 +195,19 @@ namespace FileSort
             {
                 return _array;
             }
+
+            public void Complete()
+            {
+                _index = 0;
+            }
         }
 
         private class FileChunkReference : IWritableChunkReference<T>
         {
             private readonly IChunkStorage<T> _chunkStorage;
+            private IChunkStorageWriter<T> _chunkStorageWriter;
 
-            public FileChunkReference(
-                IChunkStorage<T> chunkStorage, 
-                long size,
-                int count)
+            public FileChunkReference(IChunkStorage<T> chunkStorage, long size, int count)
             {
                 _chunkStorage = chunkStorage;
                 TotalSize = size;
@@ -222,7 +225,15 @@ namespace FileSort
 
             public void Write(T value)
             {
-                TotalSize += _chunkStorage.Push(new[] { value });       
+                if (_chunkStorageWriter == null)
+                    _chunkStorageWriter = _chunkStorage.GetWriter();
+
+                _chunkStorageWriter.Write(value);
+            }
+
+            public void Complete()
+            {
+                TotalSize = _chunkStorageWriter.Complete();
             }
         }
     }

@@ -56,6 +56,7 @@
     <Compile Include="IChunkReaderWriter.cs" />
     <Compile Include="IChunkReference.cs" />
     <Compile Include="IChunkStorage.cs" />
+    <Compile Include="IChunkStorageWriter.cs" />
     <Compile Include="ISizeCalculator.cs" />
     <Compile Include="IWritableChunkReference.cs" />
     <Compile Include="OppositeMergeSort.cs" />

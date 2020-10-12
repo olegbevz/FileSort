@@ -23,6 +23,7 @@ namespace FileSort
         {
             using (var fileStream = FileWithBuffer.OpenRead(inputFileName, _fileBufferSize))
             {
+                var fileSize = fileStream.Length;
                 var readerWriter = new FileLineReaderWriter();
 
                 var targetChunkStorage = new ChunkFileStorage<FileLine>(
@@ -50,7 +51,16 @@ namespace FileSort
                 var inputFileEntries = new StreamEnumerable(fileStream).Select(FileLine.Parse);
                 var outputFileEntries = sorter.Sort(inputFileEntries);
 
-                if (targetChunkStorage.IsEmpty)
+                if (targetChunkStorage.Size == fileSize)
+                {
+                    return;
+                }
+                else if (tempChunkStorage.Size == fileSize)
+                {
+                    File.Delete(outputFileName);
+                    File.Move(tempFileName, outputFileName);
+                }
+                else
                 {
                     var outputLines = outputFileEntries.Select(x => x.ToString());
                     File.WriteAllLines(outputFileName, outputLines);
