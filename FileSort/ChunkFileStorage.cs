@@ -12,8 +12,9 @@ namespace FileSort
         private readonly IChunkReaderWriter<T> _readerWriter;
 
         private long _currentPosition = 0;
+        private long _currentSize = 0;
 
-        public bool IsEmpty { get { return _currentPosition > 0; } }
+        public bool IsEmpty { get { return _currentSize == 0; } }
 
         public ChunkFileStorage(string fileName, int fileBuffer, IChunkReaderWriter<T> readerWriter)
         {
@@ -33,6 +34,7 @@ namespace FileSort
                     streamWriter.Flush();
                     var size = fileStream.Position - _currentPosition;
                     _currentPosition = fileStream.Position;
+                    _currentSize = Math.Max(fileStream.Position, _currentSize);
                     return size;
                 }
             }

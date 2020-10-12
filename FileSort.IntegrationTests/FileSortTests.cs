@@ -8,6 +8,7 @@ using System.IO;
 namespace FileSort.IntegrationTests
 {
     [TestFixture]
+    [NonParallelizable]
     public class FileSortTests
     {
         [TestCase("simple.txt", "simple_sorted.txt", "simple_expected.txt", TestName = "ShouldSortSimpleFile")]
