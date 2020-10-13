@@ -20,24 +20,24 @@ namespace FileSort
             using (var leftEnumerator = left.GetEnumerator())
             using (var rightEnumerator = right.GetEnumerator())
             {
-                bool leftNotCompleted = leftEnumerator.MoveNext();
-                bool rightNotCompleted = rightEnumerator.MoveNext();
+                bool leftActive = leftEnumerator.MoveNext();
+                bool rightActive = rightEnumerator.MoveNext();
 
-                while (leftNotCompleted && rightNotCompleted)
+                while (leftActive && rightActive)
                 {
                     if (leftEnumerator.Current.CompareTo(rightEnumerator.Current) < 0)
                     {
                         yield return leftEnumerator.Current;
-                        leftNotCompleted = leftEnumerator.MoveNext();
+                        leftActive = leftEnumerator.MoveNext();
                     }
                     else
                     {
                         yield return rightEnumerator.Current;
-                        rightNotCompleted = rightEnumerator.MoveNext();
+                        rightActive = rightEnumerator.MoveNext();
                     }
                 }
 
-                if (leftNotCompleted)
+                if (leftActive)
                 {
                     do
                     {
@@ -46,13 +46,67 @@ namespace FileSort
                     while (leftEnumerator.MoveNext());
                 }
 
-                if (rightNotCompleted)
+                if (rightActive)
                 {
                     do
                     {
                         yield return rightEnumerator.Current;
                     }
                     while (rightEnumerator.MoveNext());
+                }
+            }
+        }
+
+        public IEnumerable<T> Join(IEnumerable<T>[] enumerables)
+        {
+            int count = enumerables.Length;
+            var enumerators = new IEnumerator<T>[count];
+            var completed = new bool[count];
+            int activeCount = count;
+
+            for (int i = 0; i < count; i++)
+            {
+                var enumerator = enumerables[i].GetEnumerator();
+                enumerators[i] = enumerator;
+                if (!enumerator.MoveNext())
+                {
+                    activeCount--;
+                    completed[i] = true;
+                    enumerator.Dispose();
+                }
+            }
+
+            while (activeCount > 0)
+            {
+                T minValue = default;
+                int minIndex = 0;
+                bool firstIteration = true;
+                for (int i = 0; i < count; i++)
+                {
+                    if (completed[i]) continue;
+
+                    var current = enumerators[i].Current;
+                    if (firstIteration)
+                    {
+                        minValue = current;
+                        minIndex = i;
+                        firstIteration = false;
+                    }
+                    else if (current.CompareTo(minValue) < 0)
+                    {
+                        minValue = current;
+                        minIndex = i;
+                    }
+                }
+
+                yield return minValue;
+
+                var enumerator = enumerators[minIndex];
+                if (!enumerator.MoveNext())
+                {
+                    activeCount--;
+                    completed[minIndex] = true;
+                    enumerator.Dispose();
                 }
             }
         }
