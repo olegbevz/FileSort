@@ -20,26 +20,24 @@ namespace FileSort
 
         public IChunkReference<T> SortAsChunk(IEnumerable<T> source)
         {
-            var chunk = new T[ChunkPairSize];
-            int chunkIndex = 0;
-            int targetIndex = 0;
+            var chunkPair = new T[ChunkPairSize];
+            int chunkPairIndex = 0;
 
-            foreach (var number in source)
+            foreach (var value in source)
             {
-                chunk[chunkIndex] = number;
-                chunkIndex++;
-                targetIndex++;
+                chunkPair[chunkPairIndex] = value;
+                chunkPairIndex++;
 
-                if (chunkIndex == ChunkPairSize)
+                if (chunkPairIndex == ChunkPairSize)
                 {
-                    chunk = Merge(chunk[0], chunk[1]);
-                    if (_chunkStack.LastChunkLength != chunk.Length)
+                    Merge(chunkPair);
+                    if (_chunkStack.LastChunkLength != chunkPair.Length)
                     {
-                        _chunkStack.Push(chunk);
+                        _chunkStack.Push(chunkPair);
                     }
                     else
                     {
-                        var chunkReference = _chunkStack.CreateChunk(chunk);
+                        var chunkReference = _chunkStack.CreateChunk(chunkPair);
                         while (_chunkStack.LastChunkLength == chunkReference.Count)
                         {
                             chunkReference = Merge(chunkReference, _chunkStack.Pop(), _chunkStack);
@@ -56,14 +54,13 @@ namespace FileSort
                         }
                     }
 
-                    chunk = new T[ChunkPairSize];
-                    chunkIndex = 0;
+                    chunkPairIndex = 0;
                 }
             }
 
-            if (chunkIndex > 0 && chunkIndex < ChunkPairSize)
+            if (chunkPairIndex > 0 && chunkPairIndex < ChunkPairSize)
             {
-                _chunkStack.Push(new T[] { chunk[0] });
+                _chunkStack.Push(new T[] { chunkPair[0] });
             }
 
             while (_chunkStack.Count > 1)
@@ -79,12 +76,14 @@ namespace FileSort
             return _chunkStack.Pop();
         }
 
-        public static T[] Merge(T left, T right)
+        public static void Merge(T[] chunkPair)
         {
-            if (left.CompareTo(right) < 0)
-                return new T[2] {left, right };
-
-            return new T[2] { right, left };
+            if (chunkPair[0].CompareTo(chunkPair[1]) > 0)
+            {
+                T temp = chunkPair[0];
+                chunkPair[0] = chunkPair[1];
+                chunkPair[1] = temp;
+            }
         }
 
         public static IWritableChunkReference<T> Merge(IChunkReference<T> left, IChunkReference<T> right, ChunkStack<T> chunkStack)
