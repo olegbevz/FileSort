@@ -54,7 +54,7 @@ namespace FileSort.IntegrationTests
         [TestCase("100bytes", TestName = "ShouldSort100BytesRandomFile")]
         [TestCase("1kb", TestName = "ShouldSort1KBRandomFile")]
         [TestCase("10KB", TestName = "ShouldSort10KBRandomFile")]
-        [TestCase("10kb", "--memory-buffer 0", TestName = "ShouldSort1KBRandomFileWithoutMemory")]
+        [TestCase("10kb", "--memory-buffer 0", TestName = "ShouldSort10KBRandomFileWithoutMemory")]
         [TestCase("100KB", TestName = "ShouldSort100KBRandomFile")]
         [TestCase("100KB", "--memory-buffer 0", TestName = "ShouldSort100KBRandomFileWithoutMemory")]
         [TestCase("1MB", TestName = "ShouldSort1MBRandomFile")]

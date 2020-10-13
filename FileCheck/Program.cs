@@ -33,6 +33,8 @@ namespace FileCheck
                         while (!streamReader.EndOfStream)
                         {
                             var currentLine = streamReader.ReadLine();
+                            if (string.IsNullOrEmpty(currentLine) && streamReader.EndOfStream)
+                                continue;
 
                             if (compareFileLines && previousLine != null)
                             {
