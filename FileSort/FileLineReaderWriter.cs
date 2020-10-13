@@ -10,7 +10,7 @@ namespace FileSort
     {
         public IEnumerable<FileLine> ReadFromStream(Stream stream)
         {
-            return new StreamEnumerable(stream).Select(FileLine.Parse);
+            return new FileLineReader(stream);
         }
 
         public void WriteToStream(StreamWriter streamWriter, IEnumerable<FileLine> source)

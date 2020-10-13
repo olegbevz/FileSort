@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Text;
 
 namespace FileSort.Core
 {
@@ -13,27 +15,35 @@ namespace FileSort.Core
             throw new ArgumentException($"Failed to parse line '{data}'.");
         }
 
-        public static bool TryParse(string data, out FileLine fileEntry)
+        public static FileLine Parse(StreamReader streamReader)
         {
-            fileEntry = None;
+            var streamLine = streamReader.ReadLine();
+            return FileLine.Parse(streamLine);
+        }
+
+        public static bool TryParse(string data, out FileLine fileLine)
+        {
+            fileLine = None;
             var parts = data.Split('.');
             if (parts.Length != 2) return false;
             if (!int.TryParse(parts[0], out var number)) return false;
             var name = parts[1].TrimStart();
             if (string.IsNullOrEmpty(name)) return false;
-            fileEntry = new FileLine(number, name);
+            fileLine = new FileLine(number, name, 0);
+            fileLine.Size = sizeof(int) + Encoding.Unicode.GetByteCount(fileLine.Name);
             return true;
         }
 
-        public FileLine(int number, string name)
+        public FileLine(int number, string name, long size)
         {
             Number = number;
             Name = name;
+            Size = size;
         }
 
         public int Number;
-
         public string Name;
+        public long Size;
 
         public int CompareTo(object obj)
         {

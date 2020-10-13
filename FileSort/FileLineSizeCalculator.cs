@@ -1,5 +1,5 @@
 ﻿using FileSort.Core;
-using System.Text;
+using System;
 
 namespace FileSort
 {
@@ -7,7 +7,10 @@ namespace FileSort
     {
         public long GetBytesCount(FileLine value)
         {
-            return sizeof(int) + Encoding.Unicode.GetByteCount(value.Name);
+            if (value.Size == 0)
+                throw new ArgumentException("FileLine size was not calculated");
+
+            return value.Size;
         }
     }
 }
