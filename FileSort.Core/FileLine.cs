@@ -94,7 +94,7 @@ namespace FileSort.Core
             if (Name == null) return otherEntry.Name != null ? 1 : 0;
             if (otherEntry.Name == null) return Name != null ? -1 : 0;
 
-            var compareResult = Name.CompareTo(otherEntry.Name);
+            var compareResult =  string.Compare(Name, otherEntry.Name, StringComparison.Ordinal);
             if (compareResult != 0) return compareResult;
 
             return Number.CompareTo(otherEntry.Number);
