@@ -102,14 +102,14 @@ namespace FileSort
 
         public IWritableChunkReference<T> CreateChunkForMerge(IChunkReference<T> leftChunk, IChunkReference<T> rightChunk)
         {
-            if (leftChunk is FileChunkReference || rightChunk is FileChunkReference)
+            var requiredSize = leftChunk.TotalSize + rightChunk.TotalSize;
+            if (_currentSize + requiredSize > _bufferSize)
             {
                 return new FileChunkReference(
                     _tempChunkStorage,
                     0, 
                     leftChunk.Count + rightChunk.Count);
             }
-                
 
             return new MemoryChunkReference(leftChunk.Count + rightChunk.Count, 0);
         }
