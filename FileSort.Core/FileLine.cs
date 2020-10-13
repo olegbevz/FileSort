@@ -29,8 +29,7 @@ namespace FileSort.Core
             if (!int.TryParse(parts[0], out var number)) return false;
             var name = parts[1].TrimStart();
             if (string.IsNullOrEmpty(name)) return false;
-            fileLine = new FileLine(number, name, 0);
-            fileLine.Size = sizeof(int) + Encoding.Unicode.GetByteCount(fileLine.Name);
+            fileLine = new FileLine(number, name, sizeof(int) + name.Length);
             return true;
         }
 
