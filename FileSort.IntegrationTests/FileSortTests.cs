@@ -80,14 +80,9 @@ namespace FileSort.IntegrationTests
 
             Console.WriteLine($"File '{inputFileName}' was generated in {generateProcess.TotalProcessorTime}.");
             
-            var actualFileSize = new FileInfo(inputFileName).Length;
             var expectedFileSize = MemorySize.Parse(fileSize);
-            var sizeDifference = Math.Abs(expectedFileSize - actualFileSize);
 
-            Assert.LessOrEqual(
-                sizeDifference,
-                1,
-                $"File '{inputFileName}' should have size {expectedFileSize} but has {actualFileSize}.");
+            FileSizeAssert.HasSize(inputFileName, expectedFileSize);
 
             var sortProcess = RunProcess(
                 "FileSort.exe",
@@ -97,12 +92,7 @@ namespace FileSort.IntegrationTests
 
             Console.WriteLine($"File '{outputFileName}' was sorted in {sortProcess.TotalProcessorTime}.");
 
-            actualFileSize = new FileInfo(outputFileName).Length;
-
-            Assert.AreEqual(
-                expectedFileSize,
-                actualFileSize,
-                $"File '{outputFileName}' should have size {expectedFileSize} but has {actualFileSize}.");
+            FileSizeAssert.HasSize(outputFileName, expectedFileSize);
 
             var checkProcess = RunProcess(
                 "FileCheck.exe",
