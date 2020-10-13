@@ -21,13 +21,16 @@ namespace FileSort.Core
             return FileLine.Parse(streamLine);
         }
 
+       
+
         public static bool TryParse(string data, out FileLine fileLine)
         {
             fileLine = None;
+            if (string.IsNullOrEmpty(data)) return false;
             var parts = data.Split('.');
             if (parts.Length != 2) return false;
             if (!int.TryParse(parts[0], out var number)) return false;
-            var name = parts[1].TrimStart();
+            var name = parts[1].Trim();
             if (string.IsNullOrEmpty(name)) return false;
             fileLine = new FileLine(number, name, sizeof(int) + name.Length);
             return true;
