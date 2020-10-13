@@ -28,12 +28,15 @@ namespace FileCheck
                     using (var streamReader = new StreamReader(fileStream))
                     {
                         bool compareFileLines = !options.OnlyCheckFormat;
-                        bool firstLineReaden = true;
+                        bool firstLineReaden = false;
                         FileLine previousLine = FileLine.None;                        
 
                         while (!streamReader.EndOfStream)
                         {
-                            var currentLine = FileLine.Parse(streamReader);
+                            var line = streamReader.ReadLine();
+                            if (string.IsNullOrEmpty(line) && streamReader.EndOfStream)
+                                continue;
+                            var currentLine = FileLine.Parse(line);
 
                             if (compareFileLines && firstLineReaden)
                             {
@@ -46,6 +49,7 @@ namespace FileCheck
                             }
 
                             previousLine = currentLine;
+                            firstLineReaden = true;
                         }
                     }
                 }

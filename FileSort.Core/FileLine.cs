@@ -23,7 +23,7 @@ namespace FileSort.Core
             if (TryParse(streamReader, out var entry))
                 return entry;
 
-            throw new ArgumentException($"Failed to parse stream line.");
+            throw new ArgumentException($"Failed to parse stream line '{streamReader.ReadLine()}'.");
         }
 
         public static bool TryParse(StreamReader streamReader, out FileLine fileLine)
