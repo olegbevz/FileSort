@@ -28,17 +28,16 @@ namespace FileCheck
                     using (var streamReader = new StreamReader(fileStream))
                     {
                         bool compareFileLines = !options.OnlyCheckFormat;
-                        string previousLine = null;                        
+                        bool firstLineReaden = true;
+                        FileLine previousLine = FileLine.None;                        
 
                         while (!streamReader.EndOfStream)
                         {
-                            var currentLine = streamReader.ReadLine();
-                            if (string.IsNullOrEmpty(currentLine) && streamReader.EndOfStream)
-                                continue;
+                            var currentLine = FileLine.Parse(streamReader);
 
-                            if (compareFileLines && previousLine != null)
+                            if (compareFileLines && firstLineReaden)
                             {
-                                if (FileLine.Parse(previousLine).CompareTo(FileLine.Parse(currentLine)) > 0)
+                                if (previousLine.CompareTo(currentLine) > 0)
                                 {
                                     Console.WriteLine($"File '{options.FileName}' is not properly sorted.");
                                     Console.WriteLine($"Line '{currentLine}' should be before line '{previousLine}'.");

@@ -40,7 +40,8 @@ namespace FileSort.Core
             while (!streamReader.EndOfStream && ((current = (char)streamReader.Read()) != '.') && size <= _maxNumberLength)
             {
                 if (char.IsWhiteSpace(current) && !readNumber) continue;
-                if (!char.IsNumber(current)) return false;
+                if (!char.IsNumber(current))
+                    return false;
 
                 readNumber = true;
                 int numberPart = (current - '0');
