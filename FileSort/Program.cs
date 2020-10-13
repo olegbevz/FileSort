@@ -6,22 +6,32 @@ namespace FileSort
 {
     partial class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
+            var exitCode = 0;
+
             Parser.Default.ParseArguments<FileSortOptions>(args)
-                .WithParsed(HandleFileSort);
+                .WithParsed(options => exitCode = HandleFileSort(options))
+                .WithNotParsed(options => exitCode = 1);
+
+            return exitCode;
         }
 
-        private static void HandleFileSort(FileSortOptions options)
+        private static int HandleFileSort(FileSortOptions options)
         {
             try
-            {                
-                var fileSort = new FileSort((int)MemorySize.Parse(options.FileBuffer).GetTotalBytes());
+            {
+                var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer);
+                var memoryBufferSize = MemorySize.Parse(options.MemoryBuffer);
+                var fileSort = new FileSort(fileBufferSize, memoryBufferSize);
                 fileSort.Sort(options.InputFileName, options.OutputFileName);
+                return 0;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                return 1;
             }
         }
     }
