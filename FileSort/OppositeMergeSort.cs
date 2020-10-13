@@ -13,12 +13,7 @@ namespace FileSort
             _chunkStack = chunkStack;
         }
 
-        public IEnumerable<T> SortAsEnumerable(IEnumerable<T> source)
-        {
-            return SortAsChunk(source).GetValue();
-        }
-
-        public IChunkReference<T> SortAsChunk(IEnumerable<T> source)
+        public IEnumerable<T> Sort(IEnumerable<T> source)
         {
             var chunkPair = new T[ChunkPairSize];
             int chunkPairIndex = 0;

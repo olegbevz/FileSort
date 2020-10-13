@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
@@ -70,7 +71,7 @@ namespace FileSort
             }
             else
             {
-                chunkReference = new MemoryChunkReference(chunk.ToArray(), chunkSize);
+                chunkReference = new MemoryChunkReference(chunk.ToArray(), chunkSize, _chunkStorage);
             }
 
             _stack.Push(chunkReference);
@@ -111,13 +112,13 @@ namespace FileSort
                     leftChunk.Count + rightChunk.Count);
             }
 
-            return new MemoryChunkReference(leftChunk.Count + rightChunk.Count, 0);
+            return new MemoryChunkReference(leftChunk.Count + rightChunk.Count, 0, _chunkStorage);
         }
 
         public IChunkReference<T> CreateChunk(T[] chunk)
         {
             var memorySize = chunk.Sum(x => _sizeCalcuator.GetBytesCount(x));
-            return new MemoryChunkReference(chunk, memorySize);
+            return new MemoryChunkReference(chunk, memorySize, _chunkStorage);
         }
 
         private void ResizeStack(long reqiredSpaceToAdd)
@@ -164,16 +165,19 @@ namespace FileSort
         {
             private readonly T[] _array;
             private long _index;
+            private IChunkStorage<T> _chunkStorage;
 
-            public MemoryChunkReference(long count, long size)
+            public MemoryChunkReference(long count, long size, IChunkStorage<T> chunkStorage)
             {
                 _array = new T[count];
+                _chunkStorage = chunkStorage;
                 MemorySize = size;
             }
 
-            public MemoryChunkReference(T[] value, long size)
+            public MemoryChunkReference(T[] value, long size, IChunkStorage<T> chunkStorage)
             {
                 _array = value;
+                _chunkStorage = chunkStorage;
                 MemorySize = size;
             }
 
@@ -199,6 +203,21 @@ namespace FileSort
             public void Complete()
             {
                 _index = 0;
+            }
+
+            public void Flush()
+            {
+                _chunkStorage.Push(_array);
+            }
+
+            public IEnumerator<T> GetEnumerator()
+            {
+                return this.GetValue().GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return this.GetEnumerator();
             }
         }
 
@@ -234,6 +253,20 @@ namespace FileSort
             public void Complete()
             {
                 TotalSize = _chunkStorageWriter.Complete();
+            }
+
+            public void Flush()
+            {
+            }
+
+            public IEnumerator<T> GetEnumerator()
+            {
+                return this.GetValue().GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return this.GetEnumerator();
             }
         }
     }

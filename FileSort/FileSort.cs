@@ -1,6 +1,5 @@
 ﻿using FileSort.Core;
 using System.IO;
-using System.Linq;
 
 namespace FileSort
 {
@@ -46,17 +45,9 @@ namespace FileSort
                 var sorter = new OppositeMergeSort<FileLine>(chunkStack);
 
                 var inputFileLines = new FileLineReader(fileStream);
-                var chunkReference = sorter.SortAsChunk(inputFileLines);
-
-                if (chunkReference.MemorySize == 0)
-                {
-                    return;
-                }
-                else
-                {
-                    var outputLines = chunkReference.GetValue().Select(x => x.ToString());
-                    File.WriteAllLines(outputFileName, outputLines);
-                }
+                var sortedCollection = sorter.Sort(inputFileLines);
+                if (sortedCollection is IChunkReference<FileLine> chunkReference)
+                    chunkReference.Flush();
             }
         }
     }
