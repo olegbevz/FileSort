@@ -1,11 +1,7 @@
 ﻿using FileSort.Core;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace FileSort.UnitTests
 {
@@ -35,27 +31,29 @@ namespace FileSort.UnitTests
             }
         }
 
-        [TestCase("1.X", 1, "X", TestName = "ShouldParseShortStringWothoutSpace")]
-        [TestCase("1. X", 1, "X", TestName = "ShouldParseShortStringWithSpace")]
-        [TestCase("2. Banana is yellow", 2, "Banana is yellow", TestName = "ShouldParseSimpleString")]
-        [TestCase("2.  Banana is yellow", 2, "Banana is yellow", TestName = "ShouldParseSimpleStringWithDoubleSpace")]
-        [TestCase("2. Banana is yellow ", 2, "Banana is yellow", TestName = "ShouldParseSimpleStringWithSpaceAtTheEnd")]
-        [TestCase("2. Banana  yellow", 2, "Banana  yellow", TestName = "ShouldParseSimpleStringWithDoubleSpaceInTheMiddle")]
-        [TestCase(" 2. Banana is yellow", 2, "Banana is yellow", TestName = "ShouldParseSimpleStringWithSpaceAtStart")]
-        [TestCase("2147483647. Apple", int.MaxValue, "Apple", TestName = "ShouldNotParseStringWithMaxNumber")]
-        public void ShouldParseCorrectString(string inputString, int number, string name)
+        [TestCase("1.X", 1, "X", 5, TestName = "ShouldParseShortStringWithoutSpace")]
+        [TestCase("1. X", 1, "X", 5, TestName = "ShouldParseShortStringWithSpace")]
+        [TestCase("2. Banana is yellow", 2, "Banana is yellow", 20, TestName = "ShouldParseSimpleString")]
+        [TestCase("2.  Banana is yellow", 2, "Banana is yellow", 20, TestName = "ShouldParseSimpleStringWithDoubleSpace")]
+        [TestCase("2. Banana is yellow ", 2, "Banana is yellow", 20, TestName = "ShouldParseSimpleStringWithSpaceAtTheEnd")]
+        [TestCase("2. Banana  yellow", 2, "Banana  yellow", 18, TestName = "ShouldParseSimpleStringWithDoubleSpaceInTheMiddle")]
+        [TestCase(" 2. Banana is yellow", 2, "Banana is yellow", 20, TestName = "ShouldParseSimpleStringWithSpaceAtStart")]
+        [TestCase("2147483647. Apple", int.MaxValue, "Apple", 9, TestName = "ShouldParseStringWithMaxNumber")]
+        public void ShouldParseCorrectString(string inputString, int number, string name, long size)
         {
-            Assert.IsTrue(FileLine.TryParse(inputString, out var fileName));
-            Assert.AreEqual(number, fileName.Number);
-            Assert.AreEqual(name, fileName.Name);
+            Assert.IsTrue(FileLine.TryParse(inputString, out var fileLine));
+            Assert.AreEqual(number, fileLine.Number);
+            Assert.AreEqual(name, fileLine.Name);
+            Assert.AreEqual(size, fileLine.Size);
 
             if (inputString != null)
             {
                 using (var streamReader = new StreamReader(new MemoryStream(Encoding.UTF8.GetBytes(inputString))))
                 {
-                    Assert.IsTrue(FileLine.TryParse(streamReader, out fileName));
-                    Assert.AreEqual(number, fileName.Number);
-                    Assert.AreEqual(name, fileName.Name);
+                    Assert.IsTrue(FileLine.TryParse(streamReader, out fileLine));
+                    Assert.AreEqual(number, fileLine.Number);
+                    Assert.AreEqual(name, fileLine.Name);
+                    Assert.AreEqual(size, fileLine.Size);
                 }
             }
         }
