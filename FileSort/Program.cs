@@ -21,8 +21,8 @@ namespace FileSort
         {
             try
             {
-                var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer).GetTotalBytes();
-                var memoryBufferSize = MemorySize.Parse(options.MemoryBuffer).GetTotalBytes();
+                var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer);
+                var memoryBufferSize = MemorySize.Parse(options.MemoryBuffer);
                 var fileSort = new FileSort(fileBufferSize, memoryBufferSize);
                 fileSort.Sort(options.InputFileName, options.OutputFileName);
                 return 0;

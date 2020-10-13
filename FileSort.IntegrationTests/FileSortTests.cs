@@ -81,7 +81,7 @@ namespace FileSort.IntegrationTests
             Console.WriteLine($"File '{inputFileName}' was generated in {generateProcess.TotalProcessorTime}.");
             
             var actualFileSize = new FileInfo(inputFileName).Length;
-            var expectedFileSize = MemorySize.Parse(fileSize).GetTotalBytes();
+            var expectedFileSize = MemorySize.Parse(fileSize);
             var sizeDifference = Math.Abs(expectedFileSize - actualFileSize);
 
             Assert.LessOrEqual(

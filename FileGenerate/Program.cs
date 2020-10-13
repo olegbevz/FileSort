@@ -18,9 +18,9 @@ namespace FileGenerate
         {
             try
             {
-                var fileSize = MemorySize.Parse(options.FileSize).GetTotalBytes();
-                var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer).GetTotalBytes();
-                var memoryBufferSize = Math.Min((int)MemorySize.Parse(options.MemoryBuffer).GetTotalBytes(), fileSize);
+                var fileSize = MemorySize.Parse(options.FileSize);
+                var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer);
+                var memoryBufferSize = Math.Min((int)MemorySize.Parse(options.MemoryBuffer), fileSize);
 
                 using (var fileStream = FileWithBuffer.OpenWrite(options.FileName, fileBufferSize))
                 {

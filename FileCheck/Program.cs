@@ -21,7 +21,7 @@ namespace FileCheck
         {
             try
             {
-                var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer).GetTotalBytes();
+                var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer);
 
                 using (var fileStream = FileWithBuffer.OpenRead(options.FileName, fileBufferSize))
                 {
