@@ -27,7 +27,7 @@ namespace FileSort
 
                 if (chunkPairIndex == ChunkPairSize)
                 {
-                    _sortJoin.Merge(chunkPair);
+                    _sortJoin.Join(chunkPair);
                     if (_chunkStack.LastChunkLength != chunkPair.Length)
                     {
                         _chunkStack.Push(chunkPair);
@@ -79,7 +79,8 @@ namespace FileSort
         public IWritableChunkReference<T> Merge(IChunkReference<T> left, IChunkReference<T> right, ChunkStack<T> chunkStack)
         {
             var chunkWriter = chunkStack.CreateChunkForMerge(left, right);
-            _sortJoin.Merge(left.GetValue(), right.GetValue(), chunkWriter);
+            foreach (var value in _sortJoin.Join(left.GetValue(), right.GetValue()))
+                chunkWriter.Write(value);
             chunkWriter.Complete();
             return chunkWriter;
         }

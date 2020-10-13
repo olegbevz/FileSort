@@ -5,7 +5,7 @@ namespace FileSort
 {
     public class MergeSortJoin<T> : ISortJoin<T> where T : IComparable
     {
-        public void Merge(T[] chunkPair)
+        public void Join(T[] chunkPair)
         {
             if (chunkPair[0].CompareTo(chunkPair[1]) > 0)
             {
@@ -15,7 +15,7 @@ namespace FileSort
             }
         }
 
-        public void Merge(IEnumerable<T> left, IEnumerable<T> right, IWritableChunkReference<T> chunkWriter)
+        public IEnumerable<T> Join(IEnumerable<T> left, IEnumerable<T> right)
         {
             using (var leftEnumerator = left.GetEnumerator())
             using (var rightEnumerator = right.GetEnumerator())
@@ -27,12 +27,12 @@ namespace FileSort
                 {
                     if (leftEnumerator.Current.CompareTo(rightEnumerator.Current) < 0)
                     {
-                        chunkWriter.Write(leftEnumerator.Current);
+                        yield return leftEnumerator.Current;
                         leftNotCompleted = leftEnumerator.MoveNext();
                     }
                     else
                     {
-                        chunkWriter.Write(rightEnumerator.Current);
+                        yield return rightEnumerator.Current;
                         rightNotCompleted = rightEnumerator.MoveNext();
                     }
                 }
@@ -41,7 +41,7 @@ namespace FileSort
                 {
                     do
                     {
-                        chunkWriter.Write(leftEnumerator.Current);
+                        yield return leftEnumerator.Current;
                     }
                     while (leftEnumerator.MoveNext());
                 }
@@ -50,7 +50,7 @@ namespace FileSort
                 {
                     do
                     {
-                        chunkWriter.Write(rightEnumerator.Current);
+                        yield return rightEnumerator.Current;
                     }
                     while (rightEnumerator.MoveNext());
                 }
