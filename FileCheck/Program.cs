@@ -21,21 +21,22 @@ namespace FileCheck
         {
             try
             {
-                var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer).GetTotalBytes();
+                var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer);
 
                 using (var fileStream = FileWithBuffer.OpenRead(options.FileName, fileBufferSize))
                 {
                     using (var streamReader = new StreamReader(fileStream))
                     {
-                        string previousLine = null;
+                        bool compareFileLines = !options.OnlyCheckFormat;
+                        string previousLine = null;                        
 
                         while (!streamReader.EndOfStream)
                         {
                             var currentLine = streamReader.ReadLine();
 
-                            if (previousLine != null)
+                            if (compareFileLines && previousLine != null)
                             {
-                                if (FileEntry.Parse(previousLine).CompareTo(FileEntry.Parse(currentLine)) > 0)
+                                if (FileLine.Parse(previousLine).CompareTo(FileLine.Parse(currentLine)) > 0)
                                 {
                                     Console.WriteLine($"File '{options.FileName}' is not properly sorted.");
                                     Console.WriteLine($"Line '{currentLine}' should be before line '{previousLine}'.");
@@ -48,7 +49,7 @@ namespace FileCheck
                     }
                 }
 
-                Console.WriteLine($"File {options.FileName} has been successfully checked for lines order.");
+                Console.WriteLine($"File '{options.FileName}' has been successfully checked for lines order.");
                 return 0;
             }
             catch (Exception ex)

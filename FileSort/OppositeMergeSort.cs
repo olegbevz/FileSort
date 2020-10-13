@@ -1,117 +1,138 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace FileSort
 {
-    public class OppositeMergeSort
+    public class OppositeMergeSort<T> where T : IComparable
     {
-        public T[] Sort<T>(IEnumerable<T> source) where T : IComparable
+        private const int ChunkPairSize = 2;
+
+        private readonly ChunkStack<T> _chunkStack;
+        public OppositeMergeSort(ChunkStack<T> chunkStack)
         {
-            var chunkStack = new Stack<T[]>();
-            int chunkSize = 2;
-            var chunk = new T[chunkSize];
-            int chunkIndex = 0;
-            int targetIndex = 0;
+            _chunkStack = chunkStack;
+        }
 
-            foreach (var number in source) 
+        public IEnumerable<T> SortAsEnumerable(IEnumerable<T> source)
+        {
+            return SortAsChunk(source).GetValue();
+        }
+
+        public IChunkReference<T> SortAsChunk(IEnumerable<T> source)
+        {
+            var chunkPair = new T[ChunkPairSize];
+            int chunkPairIndex = 0;
+
+            foreach (var value in source)
             {
-                chunk[chunkIndex] = number;
-                chunkIndex++;
-                targetIndex++;
+                chunkPair[chunkPairIndex] = value;
+                chunkPairIndex++;
 
-                if (chunkIndex == chunkSize)
+                if (chunkPairIndex == ChunkPairSize)
                 {
-                    if (chunkStack.Count == 0 || chunkStack.Peek().Length != chunk.Length)
+                    Merge(chunkPair);
+                    if (_chunkStack.LastChunkLength != chunkPair.Length)
                     {
-                        Merger(chunk, 0, (chunk.Length / 2) - 1, chunk.Length - 1);
-                        chunkStack.Push(chunk);
+                        _chunkStack.Push(chunkPair);
                     }
-                    else if (chunkStack.Peek().Length == chunk.Length)
+                    else
                     {
-                        Merger(chunk, 0, (chunk.Length / 2) - 1, chunk.Length - 1);
-
-                        while (chunkStack.Count > 0 && chunkStack.Peek().Length == chunk.Length)
+                        var chunkReference = _chunkStack.CreateChunk(chunkPair);
+                        while (_chunkStack.LastChunkLength == chunkReference.Count)
                         {
-                            chunk = chunkStack.Pop().Concat(chunk).ToArray();
-                            Merger(chunk, 0, (chunk.Length / 2) - 1, chunk.Length - 1);
-                            if (chunkStack.Count == 0 || chunkStack.Peek().Length != chunk.Length)
+                            chunkReference = Merge(chunkReference, _chunkStack.Pop(), _chunkStack);
+                            var previousChunkLength = _chunkStack.LastChunkLength;
+                            _chunkStack.Push(chunkReference);
+                            if (previousChunkLength == chunkReference.Count)
                             {
-                                chunkStack.Push(chunk);
+                                chunkReference = _chunkStack.Pop();
+                            }
+                            else
+                            {
                                 break;
                             }
                         }
                     }
 
-                    chunk = new T[chunkSize];
-                    chunkIndex = 0;
+                    chunkPairIndex = 0;
                 }
             }
 
-            if (chunkIndex > 0 && chunkIndex < chunkSize)
+            if (chunkPairIndex > 0 && chunkPairIndex < ChunkPairSize)
             {
-                chunkStack.Push(new T[] { chunk[0] });
+                _chunkStack.Push(new T[] { chunkPair[0] });
             }
 
-            while (chunkStack.Count > 1)
+            while (_chunkStack.Count > 1)
             {
-                var leftChunk = chunkStack.Pop();
-                chunk = leftChunk.Concat(chunkStack.Pop()).ToArray();
-                Merger(chunk, 0, leftChunk.Length - 1, chunk.Length - 1);
-                chunkStack.Push(chunk);
+                var leftChunk = _chunkStack.Pop();
+                var chunkReference = Merge(leftChunk, _chunkStack.Pop(), _chunkStack);
+                _chunkStack.Push(chunkReference);
             }
 
-            if (chunkStack.Count == 0)
-                return new T[0];
+            if (_chunkStack.Count == 0)
+                return _chunkStack.CreateChunk(new T[0]);
 
-            return chunkStack.Pop();
+            return _chunkStack.Pop();
         }
 
-        private static void Merger<T>(T[] arr, int start, int mid, int end) where T : IComparable
+        public static void Merge(T[] chunkPair)
         {
-            T[] temp = new T[end - start + 1];
-
-            int i = start;
-            int j = mid + 1;
-            int k = 0;
-
-            while (i < mid + 1 && j < end + 1)
+            if (chunkPair[0].CompareTo(chunkPair[1]) > 0)
             {
-                if (arr[i].CompareTo(arr[j]) < 0)
+                T temp = chunkPair[0];
+                chunkPair[0] = chunkPair[1];
+                chunkPair[1] = temp;
+            }
+        }
+
+        public static IWritableChunkReference<T> Merge(IChunkReference<T> left, IChunkReference<T> right, ChunkStack<T> chunkStack)
+        {
+            var chunkWriter = chunkStack.CreateChunkForMerge(left, right);
+            Merge(left.GetValue(), right.GetValue(), chunkWriter);
+            chunkWriter.Complete();
+            return chunkWriter;
+        }
+
+        public static void Merge(IEnumerable<T> left, IEnumerable<T> right, IWritableChunkReference<T> chunkWriter)
+        {
+            using (var leftEnumerator = left.GetEnumerator())
+            using (var rightEnumerator = right.GetEnumerator())
+            {
+                bool leftNotCompleted = leftEnumerator.MoveNext();
+                bool rightNotCompleted = rightEnumerator.MoveNext();
+
+                while (leftNotCompleted && rightNotCompleted)
                 {
-                    temp[k] = arr[i];
-                    i++;
-                    k++;
+                    if (leftEnumerator.Current.CompareTo(rightEnumerator.Current) < 0)
+                    {
+                        chunkWriter.Write(leftEnumerator.Current);
+                        leftNotCompleted = leftEnumerator.MoveNext();
+                    }
+                    else
+                    {
+                        chunkWriter.Write(rightEnumerator.Current);
+                        rightNotCompleted = rightEnumerator.MoveNext();
+                    }
                 }
-                else
-                {
-                    temp[k] = arr[j];
-                    j++;
-                    k++;
-                }
-            }
-            //fill in the rest
-            while (i <= mid)
-            {
-                temp[k] = arr[i];
-                i++;
-                k++;
 
-            }
-            while (j <= end)
-            {
-                temp[k] = arr[j];
-                j++;
-                k++;
-            }
-            //now make array the sorted version
-            i = start;
-            k = 0;
-            while (k < temp.Length && i <= end)
-            {
-                arr[i] = temp[k];
-                k++;
-                i++;
+                if (leftNotCompleted)
+                {
+                    do
+                    {
+                        chunkWriter.Write(leftEnumerator.Current);
+                    }
+                    while (leftEnumerator.MoveNext());
+                }
+
+                if (rightNotCompleted)
+                {
+                    do
+                    {
+                        chunkWriter.Write(rightEnumerator.Current);
+                    }
+                    while (rightEnumerator.MoveNext());
+                }
             }
         }
     }

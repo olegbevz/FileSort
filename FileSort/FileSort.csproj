@@ -46,11 +46,24 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChunkFileStorage.cs" />
+    <Compile Include="ChunkStack.cs" />
+    <Compile Include="ConstantSizeCalculator.cs" />
+    <Compile Include="FileLineReader.cs" />
+    <Compile Include="FileLineReaderWriter.cs" />
+    <Compile Include="FileLineSizeCalculator.cs" />
     <Compile Include="FileSort.cs" />
     <Compile Include="FileSortOptions.cs" />
+    <Compile Include="IChunkReaderWriter.cs" />
+    <Compile Include="IChunkReference.cs" />
+    <Compile Include="IChunkStorage.cs" />
+    <Compile Include="IChunkStorageWriter.cs" />
+    <Compile Include="ISizeCalculator.cs" />
+    <Compile Include="IWritableChunkReference.cs" />
     <Compile Include="OppositeMergeSort.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RangeStream.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
