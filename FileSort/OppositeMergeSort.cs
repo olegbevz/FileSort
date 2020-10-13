@@ -13,13 +13,18 @@ namespace FileSort
             _chunkStack = chunkStack;
         }
 
-        public IEnumerable<T> Sort(IEnumerable<T> source)
+        public IEnumerable<T> SortAsEnumerable(IEnumerable<T> source)
+        {
+            return SortAsChunk(source).GetValue();
+        }
+
+        public IChunkReference<T> SortAsChunk(IEnumerable<T> source)
         {
             var chunk = new T[ChunkPairSize];
             int chunkIndex = 0;
             int targetIndex = 0;
 
-            foreach (var number in source) 
+            foreach (var number in source)
             {
                 chunk[chunkIndex] = number;
                 chunkIndex++;
@@ -69,9 +74,9 @@ namespace FileSort
             }
 
             if (_chunkStack.Count == 0)
-                return new T[0];
+                return _chunkStack.CreateChunk(new T[0]);
 
-            return _chunkStack.Pop().GetValue();
+            return _chunkStack.Pop();
         }
 
         public static T[] Merge(T left, T right)

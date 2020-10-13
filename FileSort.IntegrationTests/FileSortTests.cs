@@ -82,10 +82,11 @@ namespace FileSort.IntegrationTests
             
             var actualFileSize = new FileInfo(inputFileName).Length;
             var expectedFileSize = MemorySize.Parse(fileSize).GetTotalBytes();
+            var sizeDifference = Math.Abs(expectedFileSize - actualFileSize);
 
-            Assert.AreEqual(
-                expectedFileSize,
-                actualFileSize,
+            Assert.LessOrEqual(
+                sizeDifference,
+                1,
                 $"File '{inputFileName}' should have size {expectedFileSize} but has {actualFileSize}.");
 
             var sortProcess = RunProcess(

@@ -20,7 +20,7 @@ namespace FileSort.UnitTests
             var sourceArray = new int[] { 6, 4, 5, 8, 7, 9, 2, 3, 1 };
             var expectedArray = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
-            var sortedArray = _sorter.Sort(sourceArray);
+            var sortedArray = _sorter.SortAsEnumerable(sourceArray);
 
             CollectionAssert.AreEqual(expectedArray, sortedArray);
         }
@@ -28,7 +28,7 @@ namespace FileSort.UnitTests
         [TestCase]
         public void ShouldSortEmptyNumberArray()
         {
-            CollectionAssert.IsEmpty(_sorter.Sort(new int[0]));
+            CollectionAssert.IsEmpty(_sorter.SortAsEnumerable(new int[0]));
         }
 
         [TestCase]
@@ -37,7 +37,7 @@ namespace FileSort.UnitTests
             var sourceArray = new int[] { 6 };
             var expectedArray = new int[] { 6 };
 
-            var sortedArray = _sorter.Sort(sourceArray);
+            var sortedArray = _sorter.SortAsEnumerable(sourceArray);
 
             CollectionAssert.AreEqual(expectedArray, sortedArray);
         }
@@ -51,7 +51,7 @@ namespace FileSort.UnitTests
         public void ShouldSortDescendingNumberArray(int arraySize)
         {
             var sourceArray = Enumerable.Range(0, arraySize).Select(index => arraySize - index).ToArray();
-            var sortedArray = _sorter.Sort(sourceArray);
+            var sortedArray = _sorter.SortAsEnumerable(sourceArray);
 
             CollectionAssert.IsOrdered(sortedArray);
         }
@@ -63,7 +63,7 @@ namespace FileSort.UnitTests
         {
             var random = new Random();
             var sourceArray =  Enumerable.Range(0, arraySize).Select(index => random.Next()).ToArray();
-            var sortedArray = _sorter.Sort(sourceArray);
+            var sortedArray = _sorter.SortAsEnumerable(sourceArray);
 
             CollectionAssert.IsOrdered(sortedArray);
         }
@@ -94,7 +94,7 @@ namespace FileSort.UnitTests
                 FileLine.Parse("30432. Something something something")
             };
 
-            var sortedArray = sorter.Sort(sourceArray);
+            var sortedArray = sorter.SortAsEnumerable(sourceArray);
 
             CollectionAssert.AreEqual(expectedArray, sortedArray);
         }

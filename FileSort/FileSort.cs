@@ -49,20 +49,15 @@ namespace FileSort
                 var sorter = new OppositeMergeSort<FileLine>(chunkStack);
 
                 var inputFileEntries = new StreamEnumerable(fileStream).Select(FileLine.Parse);
-                var outputFileEntries = sorter.Sort(inputFileEntries);
+                var chunkReference = sorter.SortAsChunk(inputFileEntries);
 
-                if (targetChunkStorage.Size == fileSize)
+                if (chunkReference.MemorySize == 0)
                 {
                     return;
                 }
-                else if (tempChunkStorage.Size == fileSize)
-                {
-                    File.Delete(outputFileName);
-                    File.Move(tempFileName, outputFileName);
-                }
                 else
                 {
-                    var outputLines = outputFileEntries.Select(x => x.ToString());
+                    var outputLines = chunkReference.GetValue().Select(x => x.ToString());
                     File.WriteAllLines(outputFileName, outputLines);
                 }
             }
