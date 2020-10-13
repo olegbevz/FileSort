@@ -59,7 +59,9 @@
     <Compile Include="IChunkStorage.cs" />
     <Compile Include="IChunkStorageWriter.cs" />
     <Compile Include="ISizeCalculator.cs" />
+    <Compile Include="ISortJoin.cs" />
     <Compile Include="IWritableChunkReference.cs" />
+    <Compile Include="MergeSortJoin.cs" />
     <Compile Include="OppositeMergeSort.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

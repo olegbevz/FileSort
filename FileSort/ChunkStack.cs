@@ -106,10 +106,11 @@ namespace FileSort
             var requiredSize = leftChunk.TotalSize + rightChunk.TotalSize;
             if (_currentSize + requiredSize > _bufferSize)
             {
-                return new FileChunkReference(
-                    _tempChunkStorage,
+                return new FileChunkReference(                    
                     0, 
-                    leftChunk.Count + rightChunk.Count);
+                    leftChunk.Count + rightChunk.Count,
+                    _tempChunkStorage,
+                    _chunkStorage);
             }
 
             return new MemoryChunkReference(leftChunk.Count + rightChunk.Count, 0, _chunkStorage);
@@ -158,7 +159,7 @@ namespace FileSort
         private FileChunkReference CreateFileChunkReference(IEnumerable<T> chunk, int count)
         {
             var size = _chunkStorage.Push(chunk);
-            return new FileChunkReference(_chunkStorage, size, count);
+            return new FileChunkReference(size, count, _chunkStorage);
         }
 
         public class MemoryChunkReference : IWritableChunkReference<T>
@@ -223,12 +224,21 @@ namespace FileSort
 
         private class FileChunkReference : IWritableChunkReference<T>
         {
+            private readonly IChunkStorage<T> _targetChunkStorage;
             private readonly IChunkStorage<T> _chunkStorage;
             private IChunkStorageWriter<T> _chunkStorageWriter;
 
-            public FileChunkReference(IChunkStorage<T> chunkStorage, long size, int count)
+            public FileChunkReference(long size, int count, IChunkStorage<T> chunkStorage)
             {
                 _chunkStorage = chunkStorage;
+                TotalSize = size;
+                Count = count;
+            }
+
+            public FileChunkReference(long size, int count, IChunkStorage<T> chunkStorage, IChunkStorage<T> targetChunkStorage)
+            {
+                _chunkStorage = chunkStorage;
+                _targetChunkStorage = targetChunkStorage;
                 TotalSize = size;
                 Count = count;
             }
@@ -257,6 +267,10 @@ namespace FileSort
 
             public void Flush()
             {
+                if (_targetChunkStorage != null && _chunkStorage != _targetChunkStorage)
+                {
+                    _chunkStorage.CopyTo(_targetChunkStorage);
+                }
             }
 
             public IEnumerator<T> GetEnumerator()

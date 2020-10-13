@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FileLineTests.cs" />
+    <Compile Include="MergeSortJoinTests.cs" />
     <Compile Include="OppositeMergeSortTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

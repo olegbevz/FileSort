@@ -60,6 +60,15 @@ namespace FileSort
                 this);
         }
 
+        public void CopyTo(IChunkStorage<T> chunkStorage)
+        {
+            if (chunkStorage is ChunkFileStorage<T> chunkFileStorage)
+            {
+                File.Delete(chunkFileStorage._fileName);
+                File.Move(_fileName, chunkFileStorage._fileName);
+            }
+        }
+
         private class ChunkFileStorageWriter : IChunkStorageWriter<T>
         {
             private readonly FileStream _fileStream;
