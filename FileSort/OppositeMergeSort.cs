@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace FileSort
 {
@@ -62,12 +63,13 @@ namespace FileSort
 
             while (_chunkStack.Count > 1)
             {
-                var leftChunk = _chunkStack.Pop();
-                var chunkReference = Merge(leftChunk, _chunkStack.Pop(), _chunkStack);
-                if (_chunkStack.Count == 0)
-                    return chunkReference;
+                return Merge(_chunkStack.ToArray(), _chunkStack);
+                //var leftChunk = _chunkStack.Pop();
+                //var chunkReference = Merge(leftChunk, _chunkStack.Pop(), _chunkStack);
+                //if (_chunkStack.Count == 0)
+                //    return chunkReference;
 
-                _chunkStack.Push(chunkReference);
+                //_chunkStack.Push(chunkReference);
             }
 
             if (_chunkStack.Count == 0)
@@ -76,10 +78,24 @@ namespace FileSort
             return _chunkStack.Pop();
         }
 
-        public IWritableChunkReference<T> Merge(IChunkReference<T> left, IChunkReference<T> right, ChunkStack<T> chunkStack)
+        public IChunkReference<T> Merge(
+            IChunkReference<T> left, 
+            IChunkReference<T> right, 
+            ChunkStack<T> chunkStack)
         {
             var chunkWriter = chunkStack.CreateChunkForMerge(left, right);
             foreach (var value in _sortJoin.Join(left.GetValue(), right.GetValue()))
+                chunkWriter.Write(value);
+            chunkWriter.Complete();
+            return chunkWriter;
+        }
+
+        public IChunkReference<T> Merge(
+            IChunkReference<T>[] chunks,
+            ChunkStack<T> chunkStack)
+        {
+            var chunkWriter = chunkStack.CreateChunkForMerge(chunks);
+            foreach (var value in _sortJoin.Join(chunks.Select(x => x.GetValue()).ToArray()))
                 chunkWriter.Write(value);
             chunkWriter.Complete();
             return chunkWriter;

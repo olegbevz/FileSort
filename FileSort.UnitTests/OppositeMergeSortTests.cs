@@ -8,19 +8,14 @@ namespace FileSort.UnitTests
     [TestFixture]
     public class OppositeMergeSortTests
     {
-        private readonly OppositeMergeSort<int> _sorter = new OppositeMergeSort<int>(new ChunkStack<int>(
-            100 * MemorySize.MB,
-            new ConstantSizeCalculator<int>(sizeof(int)),
-            null,
-            null));
-
         [TestCase]
         public void ShouldSortSimpleNumberArray()
         {
             var sourceArray = new int[] { 6, 4, 5, 8, 7, 9, 2, 3, 1 };
             var expectedArray = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
-            var sortedArray = _sorter.Sort(sourceArray);
+            var sorter = CreateSorter<int>(new ConstantSizeCalculator<int>(sizeof(int)));
+            var sortedArray = sorter.Sort(sourceArray);
 
             CollectionAssert.AreEqual(expectedArray, sortedArray);
         }
@@ -28,7 +23,8 @@ namespace FileSort.UnitTests
         [TestCase]
         public void ShouldSortEmptyNumberArray()
         {
-            CollectionAssert.IsEmpty(_sorter.Sort(new int[0]));
+            var sorter = CreateSorter<int>(new ConstantSizeCalculator<int>(sizeof(int)));
+            CollectionAssert.IsEmpty(sorter.Sort(new int[0]));
         }
 
         [TestCase]
@@ -37,7 +33,8 @@ namespace FileSort.UnitTests
             var sourceArray = new int[] { 6 };
             var expectedArray = new int[] { 6 };
 
-            var sortedArray = _sorter.Sort(sourceArray);
+            var sorter = CreateSorter<int>(new ConstantSizeCalculator<int>(sizeof(int)));
+            var sortedArray = sorter.Sort(sourceArray);
 
             CollectionAssert.AreEqual(expectedArray, sortedArray);
         }
@@ -51,7 +48,9 @@ namespace FileSort.UnitTests
         public void ShouldSortDescendingNumberArray(int arraySize)
         {
             var sourceArray = Enumerable.Range(0, arraySize).Select(index => arraySize - index).ToArray();
-            var sortedArray = _sorter.Sort(sourceArray);
+
+            var sorter = CreateSorter<int>(new ConstantSizeCalculator<int>(sizeof(int)));
+            var sortedArray = sorter.Sort(sourceArray);
 
             CollectionAssert.IsOrdered(sortedArray);
         }
@@ -63,7 +62,9 @@ namespace FileSort.UnitTests
         {
             var random = new Random();
             var sourceArray =  Enumerable.Range(0, arraySize).Select(index => random.Next()).ToArray();
-            var sortedArray = _sorter.Sort(sourceArray);
+
+            var sorter = CreateSorter<int>(new ConstantSizeCalculator<int>(sizeof(int)));
+            var sortedArray = sorter.Sort(sourceArray);
 
             CollectionAssert.IsOrdered(sortedArray);
         }
@@ -71,11 +72,7 @@ namespace FileSort.UnitTests
         [TestCase]
         public void ShouldSortNumberStringArray()
         {
-            var sorter = new OppositeMergeSort<FileLine>(new ChunkStack<FileLine>(
-                100 * MemorySize.MB,
-                new FileLineSizeCalculator(),
-                null,
-                null));
+            var sorter = CreateSorter<FileLine>(new FileLineSizeCalculator());
 
             var sourceArray = new FileLine[] 
             {
@@ -98,5 +95,14 @@ namespace FileSort.UnitTests
 
             CollectionAssert.AreEqual(expectedArray, sortedArray);
         }
+
+        private OppositeMergeSort<T> CreateSorter<T>(ISizeCalculator<T> sizeCalculator) where T : IComparable
+        {
+           return new OppositeMergeSort<T>(new ChunkStack<T>(
+                100 * MemorySize.MB,
+                sizeCalculator,
+                null,
+                null));
+    }
     }
 }
