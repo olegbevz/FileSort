@@ -2,15 +2,13 @@
 
 namespace FileSort.Core
 {
-    public static class MemorySize
+    public class MemorySize
     {
         private static string[] _units = new string[] { "bytes", "KB", "MB", "GB" };
 
-        public const long KB = 1024;
-        public const long MB = KB * 1024;
-        public const long GB = MB * 1024;
+        private readonly long _size;
 
-        public static long Parse(string size)
+        public static MemorySize Parse(string size)
         {
             for (int i = 0; i < _units.Length; i++)
             {
@@ -19,11 +17,26 @@ namespace FileSort.Core
                 {
                     var bytes = long.Parse(size.Substring(0, size.Length - unit.Length));
                     bytes = bytes * (long)Math.Pow(1024, i);
-                    return bytes;
+                    return new MemorySize(bytes);
                 }
             }
 
-            return long.Parse(size);
+            return new MemorySize(long.Parse(size));
+        }
+
+        public MemorySize(long size)
+        {
+            _size = size;
+        }
+
+        public long GetTotalBytes()
+        {
+            return _size;
+        }
+
+        public static implicit operator MemorySize(int size)
+        {
+            return new MemorySize(size);
         }
     }
 }

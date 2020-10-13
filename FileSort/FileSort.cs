@@ -1,4 +1,7 @@
 ﻿using FileSort.Core;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -7,55 +10,73 @@ namespace FileSort
     public class FileSort
     {
         private readonly int _fileBufferSize;
-        private readonly long _memoryBufferSize;
 
-        public FileSort(int fileBufferSize, long memoryBufferSize)
+        public FileSort(int fileBufferSize)
         {
             _fileBufferSize = fileBufferSize;
-            _memoryBufferSize = memoryBufferSize;
-            
         }
 
         public void Sort(string inputFileName, string outputFileName)
         {
             using (var fileStream = FileWithBuffer.OpenRead(inputFileName, _fileBufferSize))
             {
-                var fileSize = fileStream.Length;
-                var readerWriter = new FileLineReaderWriter();
+                var inputFileEntries = new StreamEnumerable(fileStream).Select(FileEntry.Parse);
+                var sorter = new OppositeMergeSort();
+                var outputFileEntries = sorter.Sort(inputFileEntries);
+                var outputLines = outputFileEntries.Select(x => x.ToString());
+                File.WriteAllLines(outputFileName, outputLines);
+            }
+        }
 
-                var targetChunkStorage = new ChunkFileStorage<FileLine>(
-                    outputFileName, 
-                    _fileBufferSize,
-                    readerWriter);
+        private class StreamEnumerable : IEnumerable<string>
+        {
+            private readonly Stream _stream;
 
-                var tempFileName = Path.Combine(
-                    Path.GetDirectoryName(outputFileName),
-                    $"{Path.GetFileNameWithoutExtension(outputFileName)}_temp{Path.GetExtension(outputFileName)}");
+            public StreamEnumerable(Stream stream)
+            {
+                _stream = stream;
+            }
 
-                var tempChunkStorage = new ChunkFileStorage<FileLine>(
-                    tempFileName,
-                    _fileBufferSize,
-                    readerWriter);
+            public IEnumerator<string> GetEnumerator()
+            {
+                return new StreamEnumerator(_stream);
+            }
 
-                var chunkStack = new ChunkStack<FileLine>(
-                    _memoryBufferSize,
-                    new FileLineSizeCalculator(),
-                    targetChunkStorage,
-                    tempChunkStorage);
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return this.GetEnumerator();
+            }
 
-                var sorter = new OppositeMergeSort<FileLine>(chunkStack);
+            private class StreamEnumerator : IEnumerator<string>
+            {
+                private readonly StreamReader _streamReader;
 
-                var inputFileLines = new FileLineReader(fileStream);
-                var chunkReference = sorter.SortAsChunk(inputFileLines);
-
-                if (chunkReference.MemorySize == 0)
+                public StreamEnumerator(Stream stream)
                 {
-                    return;
+                    _streamReader = new StreamReader(stream);
                 }
-                else
+
+                public string Current { get; private set; }
+
+                object IEnumerator.Current => Current;
+
+                public void Dispose()
                 {
-                    var outputLines = chunkReference.GetValue().Select(x => x.ToString());
-                    File.WriteAllLines(outputFileName, outputLines);
+                    _streamReader.Dispose();
+                }
+
+                public bool MoveNext()
+                {
+                    if (_streamReader.EndOfStream)
+                        return false;
+
+                    Current = _streamReader.ReadLine();
+                    return true;
+                }
+
+                public void Reset()
+                {
+                    throw new NotImplementedException();
                 }
             }
         }

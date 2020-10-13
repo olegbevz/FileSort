@@ -8,11 +8,7 @@ namespace FileSort.UnitTests
     [TestFixture]
     public class OppositeMergeSortTests
     {
-        private readonly OppositeMergeSort<int> _sorter = new OppositeMergeSort<int>(new ChunkStack<int>(
-            100 * MemorySize.MB,
-            new ConstantSizeCalculator<int>(sizeof(int)),
-            null,
-            null));
+        private readonly OppositeMergeSort _sorter = new OppositeMergeSort();
 
         [TestCase]
         public void ShouldSortSimpleNumberArray()
@@ -20,7 +16,7 @@ namespace FileSort.UnitTests
             var sourceArray = new int[] { 6, 4, 5, 8, 7, 9, 2, 3, 1 };
             var expectedArray = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
-            var sortedArray = _sorter.SortAsEnumerable(sourceArray);
+            var sortedArray = _sorter.Sort(sourceArray);
 
             CollectionAssert.AreEqual(expectedArray, sortedArray);
         }
@@ -28,7 +24,7 @@ namespace FileSort.UnitTests
         [TestCase]
         public void ShouldSortEmptyNumberArray()
         {
-            CollectionAssert.IsEmpty(_sorter.SortAsEnumerable(new int[0]));
+            CollectionAssert.IsEmpty(_sorter.Sort(new int[0]));
         }
 
         [TestCase]
@@ -37,7 +33,7 @@ namespace FileSort.UnitTests
             var sourceArray = new int[] { 6 };
             var expectedArray = new int[] { 6 };
 
-            var sortedArray = _sorter.SortAsEnumerable(sourceArray);
+            var sortedArray = _sorter.Sort(sourceArray);
 
             CollectionAssert.AreEqual(expectedArray, sortedArray);
         }
@@ -51,7 +47,7 @@ namespace FileSort.UnitTests
         public void ShouldSortDescendingNumberArray(int arraySize)
         {
             var sourceArray = Enumerable.Range(0, arraySize).Select(index => arraySize - index).ToArray();
-            var sortedArray = _sorter.SortAsEnumerable(sourceArray);
+            var sortedArray = _sorter.Sort(sourceArray);
 
             CollectionAssert.IsOrdered(sortedArray);
         }
@@ -63,7 +59,7 @@ namespace FileSort.UnitTests
         {
             var random = new Random();
             var sourceArray =  Enumerable.Range(0, arraySize).Select(index => random.Next()).ToArray();
-            var sortedArray = _sorter.SortAsEnumerable(sourceArray);
+            var sortedArray = _sorter.Sort(sourceArray);
 
             CollectionAssert.IsOrdered(sortedArray);
         }
@@ -71,75 +67,26 @@ namespace FileSort.UnitTests
         [TestCase]
         public void ShouldSortNumberStringArray()
         {
-            var sorter = new OppositeMergeSort<FileLine>(new ChunkStack<FileLine>(
-                100 * MemorySize.MB,
-                new FileLineSizeCalculator(),
-                null,
-                null));
-
-            var sourceArray = new FileLine[] 
+            var sourceArray = new FileEntry[] 
             {
-                FileLine.Parse("415. Apple"),
-                FileLine.Parse("30432. Something something something"),
-                FileLine.Parse("1. Apple"),
-                FileLine.Parse("32. Cherry is the best"),
-                FileLine.Parse("2. Banana is yellow")
+                FileEntry.Parse("415. Apple"),
+                FileEntry.Parse("30432. Something something something"),
+                FileEntry.Parse("1. Apple"),
+                FileEntry.Parse("32. Cherry is the best"),
+                FileEntry.Parse("2. Banana is yellow")
             };
-            var expectedArray = new FileLine[] 
+            var expectedArray = new FileEntry[] 
             {
-                FileLine.Parse("1. Apple"),
-                FileLine.Parse("415. Apple"),
-                FileLine.Parse("2. Banana is yellow"),
-                FileLine.Parse("32. Cherry is the best"),
-                FileLine.Parse("30432. Something something something")
+                FileEntry.Parse("1. Apple"),
+                FileEntry.Parse("415. Apple"),
+                FileEntry.Parse("2. Banana is yellow"),
+                FileEntry.Parse("32. Cherry is the best"),
+                FileEntry.Parse("30432. Something something something")
             };
 
-            var sortedArray = sorter.SortAsEnumerable(sourceArray);
+            var sortedArray = _sorter.Sort(sourceArray);
 
             CollectionAssert.AreEqual(expectedArray, sortedArray);
-        }
-
-        [TestCase]
-        public void ShouldMergeSimpleArrays()
-        {
-            var leftArray = new[] { 1, 3, 5, 7, 9 };
-            var rightArray = new[] { 0, 2, 4, 6, 8, 10 };
-            var expectedArray = new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-            var arrayMerge = new ChunkStack<int>.MemoryChunkReference(leftArray.Length + rightArray.Length, 0);
-            OppositeMergeSort<int>.Merge(leftArray, rightArray, arrayMerge);
-
-            CollectionAssert.AreEqual(expectedArray, arrayMerge.ToArray());
-        }
-
-        [TestCase]
-        public void ShouldMergeEmptyArrayWithNotEmptyArray()
-        {
-            var leftArray = Array.Empty<int>();
-            var rightArray = new[] { 0, 2, 4, 6, 8, 10 };
-            var arrayMerge = new ChunkStack<int>.MemoryChunkReference(leftArray.Length + rightArray.Length, 0);
-            OppositeMergeSort<int>.Merge(leftArray, rightArray, arrayMerge);
-
-            CollectionAssert.AreEqual(rightArray, arrayMerge.ToArray());
-        }
-
-        [TestCase]
-        public void ShouldMergeNotEmptyArrayWithEmptyArray()
-        {
-            var leftArray = new[] { 1, 3, 5, 7, 9 };
-            var rightArray = Array.Empty<int>();
-            var arrayMerge = new ChunkStack<int>.MemoryChunkReference(leftArray.Length + rightArray.Length, 0);
-            OppositeMergeSort<int>.Merge(leftArray, rightArray, arrayMerge);
-
-            CollectionAssert.AreEqual(leftArray, arrayMerge.ToArray());
-        }
-
-        [TestCase]
-        public void ShouldMergeEmptyArrays()
-        {
-            var arrayMerge = new ChunkStack<int>.MemoryChunkReference(0, 0);
-            OppositeMergeSort<int>.Merge(Array.Empty<int>(), Array.Empty<int>(), arrayMerge);
-
-            CollectionAssert.IsEmpty(arrayMerge.ToArray());
         }
     }
 }

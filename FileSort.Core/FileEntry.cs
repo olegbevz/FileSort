@@ -1,52 +1,43 @@
 ﻿using System;
-using System.IO;
-using System.Text;
 
 namespace FileSort.Core
 {
-    public struct FileLine : IComparable
+    public struct FileEntry : IComparable
     {
-        public static FileLine None = new FileLine();
-        public static FileLine Parse(string data)
+        public static FileEntry None = new FileEntry();
+        public static FileEntry Parse(string data)
         {
             if (TryParse(data, out var entry))
                 return entry;
 
-            throw new ArgumentException($"Failed to parse line '{data}'.");
+            throw new ArgumentException($"Failed to parse '{data}'");
         }
 
-        public static FileLine Parse(StreamReader streamReader)
+        public static bool TryParse(string data, out FileEntry fileEntry)
         {
-            var streamLine = streamReader.ReadLine();
-            return FileLine.Parse(streamLine);
-        }
-
-        public static bool TryParse(string data, out FileLine fileLine)
-        {
-            fileLine = None;
+            fileEntry = None;
             var parts = data.Split('.');
             if (parts.Length != 2) return false;
             if (!int.TryParse(parts[0], out var number)) return false;
             var name = parts[1].TrimStart();
             if (string.IsNullOrEmpty(name)) return false;
-            fileLine = new FileLine(number, name, sizeof(int) + name.Length);
+            fileEntry = new FileEntry(number, name);
             return true;
         }
 
-        public FileLine(int number, string name, long size)
+        public FileEntry(int number, string name)
         {
             Number = number;
             Name = name;
-            Size = size;
         }
 
         public int Number;
+
         public string Name;
-        public long Size;
 
         public int CompareTo(object obj)
         {
-            if (!(obj is FileLine otherEntry)) return -1;
+            if (!(obj is FileEntry otherEntry)) return -1;
 
             if (Name == null) return otherEntry.Name != null ? 1 : 0;
             if (otherEntry.Name == null) return Name != null ? -1 : 0;

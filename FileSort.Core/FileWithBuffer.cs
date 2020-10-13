@@ -23,16 +23,6 @@ namespace FileSort.Core
                 FileShare.None,
                 bufferSize);
         }
-
-        public static FileStream OpenAppend(string fileName, int bufferSize)
-        {
-            return new FileStream(
-                fileName,
-                FileMode.OpenOrCreate,
-                FileAccess.Write,
-                FileShare.None,
-                bufferSize);
-        }
     }
 
 }
