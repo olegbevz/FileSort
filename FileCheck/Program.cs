@@ -1,12 +1,21 @@
 ﻿using System;
-using System.IO;
+using System.Reflection;
 using CommandLine;
 using FileSort.Core;
+using log4net;
+using log4net.Config;
 
 namespace FileCheck
 {
     class Program
     {
+        private static readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+        static Program()
+        {
+            XmlConfigurator.Configure();
+        }
+
         static int Main(string[] args)
         {
             int checkResult = 0;
@@ -19,47 +28,41 @@ namespace FileCheck
 
         private static int HandleFileCheck(FileCheckOptions options)
         {
+            _logger.Info($"Starting to check file '{options.FileName}' for lines order...");
+
             try
             {
                 var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer);
+                bool compareFileLines = !options.OnlyCheckFormat;
 
                 using (var fileStream = FileWithBuffer.OpenRead(options.FileName, fileBufferSize))
                 {
-                    using (var streamReader = new StreamReader(fileStream))
-                    {
-                        bool compareFileLines = !options.OnlyCheckFormat;
+                    foreach (var fileLine in new FileLineReader(fileStream))
+                    {                        
                         bool firstLineReaden = false;
-                        FileLine previousLine = FileLine.None;                        
+                        FileLine previousLine = FileLine.None;
 
-                        while (!streamReader.EndOfStream)
+                        if (compareFileLines && firstLineReaden)
                         {
-                            var line = streamReader.ReadLine();
-                            if (string.IsNullOrEmpty(line) && streamReader.EndOfStream)
-                                continue;
-                            var currentLine = FileLine.Parse(line);
-
-                            if (compareFileLines && firstLineReaden)
+                            if (previousLine.CompareTo(fileLine) > 0)
                             {
-                                if (previousLine.CompareTo(currentLine) > 0)
-                                {
-                                    Console.WriteLine($"File '{options.FileName}' is not properly sorted.");
-                                    Console.WriteLine($"Line '{currentLine}' should be before line '{previousLine}'.");
-                                    return 1;
-                                }
+                                _logger.Warn($"File '{options.FileName}' is not properly sorted.");
+                                _logger.Warn($"Line '{fileLine}' should be before line '{previousLine}'.");
+                                return 1;
                             }
-
-                            previousLine = currentLine;
-                            firstLineReaden = true;
                         }
+
+                        previousLine = fileLine;
+                        firstLineReaden = true;
                     }
                 }
 
-                Console.WriteLine($"File '{options.FileName}' has been successfully checked for lines order.");
+                _logger.Info($"File '{options.FileName}' has been successfully checked for lines order.");
                 return 0;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                _logger.Error($"Failed to parse file '{options.FileName}' for sorted lines." , ex);
                 return -1;
             }
         }

@@ -1,23 +1,39 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 using CommandLine;
 using FileSort.Core;
+using log4net;
+using log4net.Config;
 
 namespace FileGenerate
 {
     class Program
     {
-        static void Main(string[] args)
+        private static readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+        static Program()
         {
+            XmlConfigurator.Configure();
+        }
+
+        static int Main(string[] args)
+        {
+            int checkResult = 0;
+
             var parser = new Parser(cfg => cfg.CaseInsensitiveEnumValues = true);
             parser.ParseArguments<FileGenerateOptions>(args)
                 .WithParsed(HandleFileGenerate);
+
+            return checkResult;
         }
 
         private static void HandleFileGenerate(FileGenerateOptions options)
         {
             try
             {
+                _logger.Info($"Starting to generate file '{options.FileName}'...");
+
                 var fileSize = MemorySize.Parse(options.FileSize);
                 var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer);
                 var memoryBufferSize = Math.Min((int)MemorySize.Parse(options.MemoryBuffer), fileSize);
@@ -41,10 +57,12 @@ namespace FileGenerate
                             options.StringFactory);
                     }
                 }
+
+                _logger.Info($"File '{options.FileName}' has been successfully generated.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                _logger.Error($"Failed to generate file '{options.FileName}'.", ex);
             }
         }
 
