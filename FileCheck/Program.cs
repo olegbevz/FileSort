@@ -22,35 +22,27 @@ namespace FileCheck
             try
             {
                 var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer);
+                bool compareFileLines = !options.OnlyCheckFormat;
 
                 using (var fileStream = FileWithBuffer.OpenRead(options.FileName, fileBufferSize))
                 {
-                    using (var streamReader = new StreamReader(fileStream))
-                    {
-                        bool compareFileLines = !options.OnlyCheckFormat;
+                    foreach (var fileLine in new FileLineReader(fileStream))
+                    {                        
                         bool firstLineReaden = false;
-                        FileLine previousLine = FileLine.None;                        
+                        FileLine previousLine = FileLine.None;
 
-                        while (!streamReader.EndOfStream)
+                        if (compareFileLines && firstLineReaden)
                         {
-                            var line = streamReader.ReadLine();
-                            if (string.IsNullOrEmpty(line) && streamReader.EndOfStream)
-                                continue;
-                            var currentLine = FileLine.Parse(line);
-
-                            if (compareFileLines && firstLineReaden)
+                            if (previousLine.CompareTo(fileLine) > 0)
                             {
-                                if (previousLine.CompareTo(currentLine) > 0)
-                                {
-                                    Console.WriteLine($"File '{options.FileName}' is not properly sorted.");
-                                    Console.WriteLine($"Line '{currentLine}' should be before line '{previousLine}'.");
-                                    return 1;
-                                }
+                                Console.WriteLine($"File '{options.FileName}' is not properly sorted.");
+                                Console.WriteLine($"Line '{fileLine}' should be before line '{previousLine}'.");
+                                return 1;
                             }
-
-                            previousLine = currentLine;
-                            firstLineReaden = true;
                         }
+
+                        previousLine = fileLine;
+                        firstLineReaden = true;
                     }
                 }
 
