@@ -11,20 +11,17 @@ namespace FileSort
         private readonly ISizeCalculator<T> _sizeCalcuator;
         private readonly long _bufferSize;
         private readonly IChunkStorage<T> _chunkStorage;
-        private readonly IChunkStorage<T> _tempChunkStorage;
 
         private long _currentSize;
 
         public ChunkStack(
             long bufferSize, 
             ISizeCalculator<T> sizeCalculator,
-            IChunkStorage<T> chunkStorage,
-            IChunkStorage<T> tempChunkStorage)
+            IChunkStorage<T> chunkStorage)
         {
             _bufferSize = bufferSize;
             _sizeCalcuator = sizeCalculator;
             _chunkStorage = chunkStorage;
-            _tempChunkStorage = tempChunkStorage;
         }
 
         public int Count
@@ -78,7 +75,7 @@ namespace FileSort
             }
             else
             {
-                chunkReference = new MemoryChunkReference(chunk.ToArray(), chunkSize, _chunkStorage);
+                chunkReference = new MemoryChunkReference(chunk.ToArray(), chunkSize);
             }
 
             _stack.Push(chunkReference);
@@ -115,10 +112,10 @@ namespace FileSort
             var totalCount = leftChunk.Count + rightChunk.Count;
             if (_currentSize + totalSize > _bufferSize)
             {
-                return new FileChunkReference(0, totalCount, _tempChunkStorage, _chunkStorage);
+                return new FileChunkReference(0, totalCount, _chunkStorage);
             }
 
-            return new MemoryChunkReference(totalCount, 0, _chunkStorage);
+            return new MemoryChunkReference(totalCount, 0);
         }
 
         public IWritableChunkReference<T> CreateChunkForMerge(IChunkReference<T>[] chunks)
@@ -127,16 +124,16 @@ namespace FileSort
             var totalCount = chunks.Sum(x => x.Count);
             if (_currentSize + totalSize > _bufferSize)
             {
-                return new FileChunkReference(0, totalCount, _tempChunkStorage, _chunkStorage);
+                return new FileChunkReference(0, totalCount, _chunkStorage);
             }
 
-            return new MemoryChunkReference(totalCount, 0, _chunkStorage);
+            return new MemoryChunkReference(totalCount, 0);
         }
 
         public IChunkReference<T> CreateChunk(T[] chunk)
         {
             var memorySize = chunk.Sum(x => _sizeCalcuator.GetBytesCount(x));
-            return new MemoryChunkReference(chunk, memorySize, _chunkStorage);
+            return new MemoryChunkReference(chunk, memorySize);
         }
 
         public IChunkReference<T>[] ToArray()
@@ -188,19 +185,16 @@ namespace FileSort
         {
             private readonly T[] _array;
             private long _index;
-            private IChunkStorage<T> _chunkStorage;
 
-            public MemoryChunkReference(long count, long size, IChunkStorage<T> chunkStorage)
+            public MemoryChunkReference(long count, long size)
             {
                 _array = new T[count];
-                _chunkStorage = chunkStorage;
                 MemorySize = size;
             }
 
-            public MemoryChunkReference(T[] value, long size, IChunkStorage<T> chunkStorage)
+            public MemoryChunkReference(T[] value, long size)
             {
                 _array = value;
-                _chunkStorage = chunkStorage;
                 MemorySize = size;
             }
 
@@ -228,9 +222,9 @@ namespace FileSort
                 _index = 0;
             }
 
-            public void Flush()
+            public void Flush(IChunkStorage<T> chunkStorage)
             {
-                _chunkStorage.Push(_array);
+                chunkStorage.Push(_array);
             }
 
             public IEnumerator<T> GetEnumerator()
@@ -246,21 +240,12 @@ namespace FileSort
 
         private class FileChunkReference : IWritableChunkReference<T>
         {
-            private readonly IChunkStorage<T> _targetChunkStorage;
             private readonly IChunkStorage<T> _chunkStorage;
             private IChunkStorageWriter<T> _chunkStorageWriter;
 
             public FileChunkReference(long size, int count, IChunkStorage<T> chunkStorage)
             {
                 _chunkStorage = chunkStorage;
-                TotalSize = size;
-                Count = count;
-            }
-
-            public FileChunkReference(long size, int count, IChunkStorage<T> chunkStorage, IChunkStorage<T> targetChunkStorage)
-            {
-                _chunkStorage = chunkStorage;
-                _targetChunkStorage = targetChunkStorage;
                 TotalSize = size;
                 Count = count;
             }
@@ -287,11 +272,11 @@ namespace FileSort
                 TotalSize = _chunkStorageWriter.Complete();
             }
 
-            public void Flush()
+            public void Flush(IChunkStorage<T> chunkStorage)
             {
-                if (_targetChunkStorage != null && _chunkStorage != _targetChunkStorage)
+                if (_chunkStorage != chunkStorage)
                 {
-                    _chunkStorage.CopyTo(_targetChunkStorage);
+                    _chunkStorage.CopyTo(chunkStorage);
                 }
             }
 

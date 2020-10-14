@@ -101,8 +101,11 @@ namespace FileSort.UnitTests
            return new OppositeMergeSort<T>(new ChunkStack<T>(
                 100 * MemorySize.MB,
                 sizeCalculator,
-                null,
+                null),
+                new ChunkStack<T>(
+                100 * MemorySize.MB,
+                sizeCalculator,
                 null));
-    }
+        }
     }
 }

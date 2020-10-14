@@ -9,11 +9,13 @@ namespace FileSort
         private const int ChunkPairSize = 2;
 
         private readonly ChunkStack<T> _chunkStack;
+        private readonly ChunkStack<T> _tempChunkStack;
         private readonly ISortJoin<T> _sortJoin = new MergeSortJoin<T>();
 
-        public OppositeMergeSort(ChunkStack<T> chunkStack)
+        public OppositeMergeSort(ChunkStack<T> chunkStack, ChunkStack<T> tempChunkStack)
         {
             _chunkStack = chunkStack;
+            _tempChunkStack = tempChunkStack;
         }
 
         public IEnumerable<T> Sort(IEnumerable<T> source)
@@ -38,7 +40,7 @@ namespace FileSort
                         var chunkReference = _chunkStack.CreateChunk(chunkPair);
                         while (_chunkStack.LastChunkLength == chunkReference.Count)
                         {
-                            chunkReference = Merge(chunkReference, _chunkStack.Pop(), _chunkStack);
+                            chunkReference = Merge(chunkReference, _chunkStack.Pop(), _tempChunkStack);
                             var previousChunkLength = _chunkStack.LastChunkLength;
                             _chunkStack.Push(chunkReference);
                             if (previousChunkLength == chunkReference.Count)
@@ -63,7 +65,7 @@ namespace FileSort
 
             while (_chunkStack.Count > 1)
             {
-                return Merge(_chunkStack.ToArray(), _chunkStack);
+                return Merge(_chunkStack.ToArray(), _tempChunkStack);
                 //var leftChunk = _chunkStack.Pop();
                 //var chunkReference = Merge(leftChunk, _chunkStack.Pop(), _chunkStack);
                 //if (_chunkStack.Count == 0)
@@ -72,10 +74,10 @@ namespace FileSort
                 //_chunkStack.Push(chunkReference);
             }
 
-            if (_chunkStack.Count == 0)
-                return _chunkStack.CreateChunk(new T[0]);
+            if (_chunkStack.Count == 1)
+                return _chunkStack.Pop();
 
-            return _chunkStack.Pop();
+            return Array.Empty<T>();
         }
 
         private IChunkReference<T> Merge(

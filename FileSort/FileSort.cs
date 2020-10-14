@@ -39,17 +39,21 @@ namespace FileSort
                 var chunkStack = new ChunkStack<FileLine>(
                     _memoryBufferSize,
                     new FileLineSizeCalculator(),
-                    targetChunkStorage,
+                    targetChunkStorage);
+
+                var tempChunkStack = new ChunkStack<FileLine>(
+                    _memoryBufferSize,
+                    new FileLineSizeCalculator(),
                     tempChunkStorage);
 
-                //var sorter = new OppositeMergeSort<FileLine>(chunkStack);
+                //var sorter = new OppositeMergeSort<FileLine>(chunkStack, tempChunkStack);
 
-                var sorter = new OppositeMergeQuickSort<FileLine>(chunkStack);
+                var sorter = new OppositeMergeQuickSort<FileLine>(chunkStack, tempChunkStack);
 
                 var inputFileLines = new FileLineReader(fileStream);
                 var sortedCollection = sorter.Sort(inputFileLines);
                 if (sortedCollection is IChunkReference<FileLine> chunkReference)
-                    chunkReference.Flush();
+                    chunkReference.Flush(targetChunkStorage);
             }
         }
     }

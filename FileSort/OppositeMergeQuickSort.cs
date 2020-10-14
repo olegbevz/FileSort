@@ -11,14 +11,17 @@ namespace FileSort
         private static readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private readonly ChunkStack<T> _chunkStack;
+        private readonly ChunkStack<T> _tempChunkStack;
         private readonly int _chunkSize;
         private readonly ISortJoin<T> _sortJoin = new MergeSortJoin<T>();
 
         public OppositeMergeQuickSort(
             ChunkStack<T> chunkStack,
+            ChunkStack<T> tempChunkStack,
             int chunkSize = 1000000)
         {
             _chunkStack = chunkStack;
+            _tempChunkStack = tempChunkStack;
             _chunkSize = chunkSize;
         }
         public IEnumerable<T> Sort(IEnumerable<T> source)
@@ -66,7 +69,7 @@ namespace FileSort
             //    return Merge(_tempChunkStack.ToArray(), _chunkStack);
 
             if (_chunkStack.Count > 1)
-                return Merge(_chunkStack.ToArray(), _chunkStack);
+                return Merge(_chunkStack.ToArray(), _tempChunkStack);
 
             if (_chunkStack.Count == 1)
                 return _chunkStack.Pop();
