@@ -67,41 +67,22 @@ namespace FileSort.IntegrationTests
         {
             var inputFileName = Path.Combine("Content", fileSize + ".txt");
             var outputFileName = Path.Combine("Content", fileSize + "_sorted.txt");
-
-            var generateProcess = ProcessRunner.RunProcess(
-                "FileGenerate.exe",
-                $"{inputFileName} -s {fileSize}");
-
-            ProcessAssert.HasZeroExitCode(generateProcess, $"File '{inputFileName}' generation failed.");
-
-            inputFileName = Path.Combine(generateProcess.StartInfo.WorkingDirectory, inputFileName);
-            outputFileName = Path.Combine(generateProcess.StartInfo.WorkingDirectory, outputFileName);
-
-            Console.WriteLine($"File '{inputFileName}' was generated in {generateProcess.TotalProcessorTime}.");
-            
             var expectedFileSize = MemorySize.Parse(fileSize);
 
-            FileSizeAssert.HasSize(inputFileName, expectedFileSize);
-
-            var sortProcess = ProcessRunner.RunProcess(
-                "FileSort.exe",
-                $"{inputFileName} {outputFileName} {sortArguments}");
-
+            var generateProcess = ProcessRunner.RunProcess("FileGenerate.exe", $"{inputFileName} -s {fileSize}");
+            ProcessAssert.HasZeroExitCode(generateProcess, $"File '{inputFileName}' generation failed.");
+            inputFileName = Path.Combine(generateProcess.StartInfo.WorkingDirectory, inputFileName);
+            outputFileName = Path.Combine(generateProcess.StartInfo.WorkingDirectory, outputFileName);
+            Console.WriteLine($"File '{inputFileName}' was generated in {generateProcess.TotalProcessorTime}.");
+                     
+            var sortProcess = ProcessRunner.RunProcess("FileSort.exe", $"{inputFileName} {outputFileName} {sortArguments}");
             ProcessAssert.HasZeroExitCode(sortProcess, $"File '{inputFileName}' sort failed.");
-
             Console.WriteLine($"File '{outputFileName}' was sorted in {sortProcess.TotalProcessorTime}.");
-
             FileSizeAssert.HasSize(outputFileName, expectedFileSize);
 
-            var checkProcess = ProcessRunner.RunProcess(
-                "FileCheck.exe",
-                $"{outputFileName}");
-
+            var checkProcess = ProcessRunner.RunProcess("FileCheck.exe", $"{outputFileName}");
             Console.WriteLine($"File '{outputFileName}' was checked in {checkProcess.TotalProcessorTime}.");
-
             ProcessAssert.HasZeroExitCode(checkProcess, $"File '{inputFileName}' was not properly sorted or check failed.");         
         }
-
-
     }
 }

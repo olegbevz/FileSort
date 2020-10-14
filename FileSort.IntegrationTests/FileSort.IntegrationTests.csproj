@@ -47,10 +47,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assert\FileSizeAssert.cs" />
+    <Compile Include="Assertions\FileSizeAssert.cs" />
+    <Compile Include="FileCheckTests.cs" />
     <Compile Include="FileGenerateTests.cs" />
     <Compile Include="FileSortTests.cs" />
-    <Compile Include="Assert\ProcessAssert.cs" />
+    <Compile Include="Assertions\ProcessAssert.cs" />
     <Compile Include="ProcessRunner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

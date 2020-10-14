@@ -9,5 +9,10 @@ namespace FileSort.IntegrationTests
         {
             Assert.AreEqual(0, process.ExitCode, message);
         }
+
+        public static void HasExitCode(Process process, int expectedExitCode, string message)
+        {
+            Assert.AreEqual(expectedExitCode, process.ExitCode, message);
+        }
     }
 }
