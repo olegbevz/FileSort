@@ -55,7 +55,6 @@
     <Compile Include="ChunkStack.cs" />
     <Compile Include="ConstantSizeCalculator.cs" />
     <Compile Include="OppositeMergeQuickSort.cs" />
-    <Compile Include="FileLineReader.cs" />
     <Compile Include="FileLineReaderWriter.cs" />
     <Compile Include="FileLineSizeCalculator.cs" />
     <Compile Include="FileSort.cs" />
