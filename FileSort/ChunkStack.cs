@@ -99,7 +99,6 @@ namespace FileSort
             if (chunkReference is MemoryChunkReference memoryWriter)
             {
                 Push(memoryWriter.ToArray());
-                return;
             }
 
             if (chunkReference is FileChunkReference fileChunkReference)

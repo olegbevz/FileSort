@@ -1,32 +1,37 @@
-﻿using FileSort.Core;
+﻿using log4net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Reflection;
 
 namespace FileSort
 {
     public class OppositeMergeQuickSort<T> : ISortMethod<T> where T : IComparable
     {
-        private readonly ChunkStack<T> _chunkStack;
-        private readonly long _chunkMaxSize = 1000000;
-        private readonly ISortJoin<T> _sortJoin = new MergeSortJoin<T>();
-        private readonly ISizeCalculator<T> _sizeCalculator;
+        private static readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        public OppositeMergeQuickSort(ChunkStack<T> chunkStack, ISizeCalculator<T> sizeCalculator)
+        private readonly ChunkStack<T> _chunkStack;
+        private readonly int _chunkSize;
+        private readonly ISortJoin<T> _sortJoin = new MergeSortJoin<T>();
+
+        public OppositeMergeQuickSort(
+            ChunkStack<T> chunkStack,
+            int chunkSize = 1000000)
         {
             _chunkStack = chunkStack;
-            _sizeCalculator = sizeCalculator;
+            _chunkSize = chunkSize;
         }
         public IEnumerable<T> Sort(IEnumerable<T> source)
         {
             var currentChunk = new List<T>();
             long currentChunkSize = 0;
 
+            _logger.Info("Starting reading phase...");
+
             foreach (var value in source)
             {
                 currentChunk.Add(value);
-                if (currentChunkSize < _chunkMaxSize)
+                if (currentChunkSize < _chunkSize)
                 {                   
                     currentChunkSize++;
                 }
@@ -42,10 +47,29 @@ namespace FileSort
             currentChunk.Sort();
             _chunkStack.Push(currentChunk);
 
+            _logger.Info("Reading phase completed");
+            _logger.Info("Starting final phase...");
+
+            //var joinSize = 4;
+            //IChunkReference<T>[] chunkBuffer = new IChunkReference<T>[joinSize];
+            //while (_chunkStack.Count > 1)
+            //{
+            //    var size = Math.Min(joinSize, _chunkStack.Count);
+            //    for (int i = 0; i < size; i++)
+            //        chunkBuffer[size - 1 - i] = _chunkStack.Pop();
+
+            //    var chunk = Merge(chunkBuffer, _chunkStack);
+            //    _tempChunkStack.Push(chunk);
+            //}
+
+            //if (_tempChunkStack.Count > 1)
+            //    return Merge(_tempChunkStack.ToArray(), _chunkStack);
+
             if (_chunkStack.Count > 1)
-            {
                 return Merge(_chunkStack.ToArray(), _chunkStack);
-            }
+
+            if (_chunkStack.Count == 1)
+                return _chunkStack.Pop();
 
             return Array.Empty<T>();
         }

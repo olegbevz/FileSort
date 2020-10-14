@@ -1,5 +1,4 @@
-﻿using FileGenerate;
-using FileSort.Core;
+﻿using FileSort.Core;
 using NUnit.Framework;
 using System;
 using System.IO;
@@ -60,6 +59,7 @@ namespace FileSort.IntegrationTests
         [TestCase("10mb", TestName = "ShouldSort10MBRandomFile")]
         [TestCase("10MB", "--memory-buffer 10MB", TestName = "ShouldSort10MBRandomFileWith10MBLimit")]
         [TestCase("100MB", TestName = "ShouldSort100MBRandomFile")]
+        [TestCase("250MB", TestName = "ShouldSort250MBRandomFile")]
         [TestCase("1GB", TestName = "ShouldSort1GBRandomFile", IgnoreReason = "Test is too long. Should be run manually")]
         [TestCase("10GB", TestName = "ShouldSort10GBRandomFile", IgnoreReason = "Test is too long. Should be run manually")]
         [TestCase("100GB", TestName = "ShouldSort100GBRandomFile", IgnoreReason = "Test is too long. Should be run manually")]

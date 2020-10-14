@@ -7,7 +7,7 @@ namespace FileSort.IntegrationTests
 {
     [TestFixture]
     [NonParallelizable]
-    public partial class FileGenerateTests
+    public class FileGenerateTests
     {
         [TestCase("0bytes", TestName = "ShouldGenerateEmptyFile")]
         [TestCase("10KB", TestName = "ShouldGenerate10KBFile")]
