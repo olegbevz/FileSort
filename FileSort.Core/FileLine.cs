@@ -29,22 +29,22 @@ namespace FileSort.Core
         public static bool TryParse(StreamReader streamReader, out FileLine fileLine)
         {
             fileLine = None;
-            char current;
-            int size = 0;
-            bool readNumber = false;
-            int number = 0;
 
             if (streamReader.EndOfStream)
                 return false;
 
-            while (!streamReader.EndOfStream && ((current = (char)streamReader.Read()) != '.') && size <= _maxNumberLength)
+            while (!streamReader.EndOfStream && char.IsWhiteSpace((char)streamReader.Peek()))
+                streamReader.Read();
+
+            char current;
+            int size = 0;
+            int number = 0;
+            while (!streamReader.EndOfStream && (current = (char)streamReader.Read()) != '.' && size <= _maxNumberLength)
             {
-                if (char.IsWhiteSpace(current) && !readNumber) continue;
                 if (!char.IsNumber(current))
                     return false;
 
-                readNumber = true;
-                int numberPart = (current - '0');
+                int numberPart = current - '0';
                 if (number == _maxNumberDivTen && numberPart > _maxNumberModTen)
                     return false;
 
@@ -55,7 +55,10 @@ namespace FileSort.Core
             if (streamReader.EndOfStream)
                 return false;
 
-            var name = streamReader.ReadLine().Trim();
+            while (!streamReader.EndOfStream && char.IsWhiteSpace((char)streamReader.Peek()))
+                streamReader.Read();
+
+            var name = streamReader.ReadLine();
             if (string.IsNullOrEmpty(name))
                 return false;
 
@@ -71,7 +74,7 @@ namespace FileSort.Core
             var parts = data.Split('.');
             if (parts.Length != 2) return false;
             if (!int.TryParse(parts[0], out var number)) return false;
-            var name = parts[1].Trim();
+            var name = parts[1].TrimStart();
             if (string.IsNullOrEmpty(name)) return false;
             fileLine = new FileLine(number, name, sizeof(int) + name.Length);
             return true;

@@ -35,7 +35,7 @@ namespace FileSort.UnitTests
         [TestCase("1. X", 1, "X", 5, TestName = "ShouldParseShortStringWithSpace")]
         [TestCase("2. Banana is yellow", 2, "Banana is yellow", 20, TestName = "ShouldParseSimpleString")]
         [TestCase("2.  Banana is yellow", 2, "Banana is yellow", 20, TestName = "ShouldParseSimpleStringWithDoubleSpace")]
-        [TestCase("2. Banana is yellow ", 2, "Banana is yellow", 20, TestName = "ShouldParseSimpleStringWithSpaceAtTheEnd")]
+        [TestCase("2. Banana is yellow ", 2, "Banana is yellow ", 21, TestName = "ShouldParseSimpleStringWithSpaceAtTheEnd")]
         [TestCase("2. Banana  yellow", 2, "Banana  yellow", 18, TestName = "ShouldParseSimpleStringWithDoubleSpaceInTheMiddle")]
         [TestCase(" 2. Banana is yellow", 2, "Banana is yellow", 20, TestName = "ShouldParseSimpleStringWithSpaceAtStart")]
         [TestCase("2147483647. Apple", int.MaxValue, "Apple", 9, TestName = "ShouldParseStringWithMaxNumber")]
