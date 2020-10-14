@@ -136,6 +136,12 @@ namespace FileSort
             return new MemoryChunkReference(chunk, memorySize);
         }
 
+        public IChunkReference<T> CreateChunk(List<T> chunk)
+        {
+            var memorySize = chunk.Sum(x => _sizeCalcuator.GetBytesCount(x));
+            return new MemoryChunkReference(chunk.ToArray(), memorySize);
+        }
+
         public IChunkReference<T>[] ToArray()
         {
             return _stack.ToArray();
