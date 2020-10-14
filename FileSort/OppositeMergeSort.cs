@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace FileSort
 {
-    public class OppositeMergeSort<T> where T : IComparable
+    public class OppositeMergeSort<T> : ISortMethod<T> where T : IComparable
     {
         private const int ChunkPairSize = 2;
 
@@ -78,9 +78,9 @@ namespace FileSort
             return _chunkStack.Pop();
         }
 
-        public IChunkReference<T> Merge(
-            IChunkReference<T> left, 
-            IChunkReference<T> right, 
+        private IChunkReference<T> Merge(
+            IChunkReference<T> left,
+            IChunkReference<T> right,
             ChunkStack<T> chunkStack)
         {
             var chunkWriter = chunkStack.CreateChunkForMerge(left, right);
@@ -90,7 +90,7 @@ namespace FileSort
             return chunkWriter;
         }
 
-        public IChunkReference<T> Merge(
+        private IChunkReference<T> Merge(
             IChunkReference<T>[] chunks,
             ChunkStack<T> chunkStack)
         {

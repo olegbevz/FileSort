@@ -60,7 +60,14 @@ namespace FileSort
             Push(chunk, chunk.Length, chunkSize);
         }
 
-        private void Push(IEnumerable<T> chunk, int count, long chunkSize)
+        public void Push(IEnumerable<T> chunk)
+        {
+            var chunkSize = chunk.Sum(x => _sizeCalcuator.GetBytesCount(x));
+
+            Push(chunk, chunk.Count(), chunkSize);
+        }
+
+        public void Push(IEnumerable<T> chunk, int count, long chunkSize)
         {
             EnsureStakSize(chunkSize);
 

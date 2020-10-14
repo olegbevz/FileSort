@@ -2,7 +2,6 @@
 using FileSort.Core;
 using NUnit.Framework;
 using System;
-using System.Diagnostics;
 using System.IO;
 
 namespace FileSort.IntegrationTests
@@ -18,7 +17,7 @@ namespace FileSort.IntegrationTests
         [TestCase("500bytes.txt", "500bytes_sorted.txt", "500bytes_expected.txt", TestName = "ShouldSort500BytesFile")]
         public void ShouldSortFileFromContent(string inputFileName, string outputFileName, string expectedFileName)
         {
-            var process = RunProcess(
+            var process = ProcessRunner.RunProcess(
                 "FileSort.exe", 
                 $"{Path.Combine("Content", inputFileName)} {Path.Combine("Content", outputFileName)}");
 
@@ -38,7 +37,7 @@ namespace FileSort.IntegrationTests
         [TestCase("500bytes.txt", "500bytes_sorted.txt", "500bytes_expected.txt", TestName = "ShouldSort500BytesFileWithoutMemory")]
         public void ShouldSortFileWithoutMemory(string inputFileName, string outputFileName, string expectedFileName)
         {
-            var process = RunProcess(
+            var process = ProcessRunner.RunProcess(
                 "FileSort.exe",
                 $"{Path.Combine("Content", inputFileName)} {Path.Combine("Content", outputFileName)} --memory-buffer 0");
 
@@ -69,7 +68,7 @@ namespace FileSort.IntegrationTests
             var inputFileName = Path.Combine("Content", fileSize + ".txt");
             var outputFileName = Path.Combine("Content", fileSize + "_sorted.txt");
 
-            var generateProcess = RunProcess(
+            var generateProcess = ProcessRunner.RunProcess(
                 "FileGenerate.exe",
                 $"{inputFileName} -s {fileSize}");
 
@@ -84,7 +83,7 @@ namespace FileSort.IntegrationTests
 
             FileSizeAssert.HasSize(inputFileName, expectedFileSize);
 
-            var sortProcess = RunProcess(
+            var sortProcess = ProcessRunner.RunProcess(
                 "FileSort.exe",
                 $"{inputFileName} {outputFileName} {sortArguments}");
 
@@ -94,7 +93,7 @@ namespace FileSort.IntegrationTests
 
             FileSizeAssert.HasSize(outputFileName, expectedFileSize);
 
-            var checkProcess = RunProcess(
+            var checkProcess = ProcessRunner.RunProcess(
                 "FileCheck.exe",
                 $"{outputFileName}");
 
@@ -103,34 +102,6 @@ namespace FileSort.IntegrationTests
             ProcessAssert.HasZeroExitCode(checkProcess, $"File '{inputFileName}' was not properly sorted or check failed.");         
         }
 
-        private Process RunProcess(string executable, string arguments)
-        {
-            var currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            var executablePath = Path.Combine(currentDirectory, executable);
 
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = executablePath,
-                Arguments = arguments,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                WorkingDirectory = currentDirectory
-            };
-
-            var process = new Process { StartInfo = startInfo };
-            process.Start();
-
-            while (!process.StandardOutput.EndOfStream)
-            {
-                var line = process.StandardOutput.ReadLine();
-                Console.WriteLine(line);
-            }
-
-            process.WaitForExit();
-
-            return process;
-        }
     }
 }
