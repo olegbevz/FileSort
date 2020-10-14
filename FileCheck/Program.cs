@@ -1,12 +1,21 @@
 ﻿using System;
-using System.IO;
+using System.Reflection;
 using CommandLine;
 using FileSort.Core;
+using log4net;
+using log4net.Config;
 
 namespace FileCheck
 {
     class Program
     {
+        private static readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+        static Program()
+        {
+            XmlConfigurator.Configure();
+        }
+
         static int Main(string[] args)
         {
             int checkResult = 0;
@@ -19,6 +28,8 @@ namespace FileCheck
 
         private static int HandleFileCheck(FileCheckOptions options)
         {
+            _logger.Info($"Starting to check file '{options.FileName}' for lines order...");
+
             try
             {
                 var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer);
@@ -35,8 +46,8 @@ namespace FileCheck
                         {
                             if (previousLine.CompareTo(fileLine) > 0)
                             {
-                                Console.WriteLine($"File '{options.FileName}' is not properly sorted.");
-                                Console.WriteLine($"Line '{fileLine}' should be before line '{previousLine}'.");
+                                _logger.Warn($"File '{options.FileName}' is not properly sorted.");
+                                _logger.Warn($"Line '{fileLine}' should be before line '{previousLine}'.");
                                 return 1;
                             }
                         }
@@ -46,12 +57,12 @@ namespace FileCheck
                     }
                 }
 
-                Console.WriteLine($"File '{options.FileName}' has been successfully checked for lines order.");
+                _logger.Info($"File '{options.FileName}' has been successfully checked for lines order.");
                 return 0;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                _logger.Error($"Failed to parse file '{options.FileName}' for sorted lines." , ex);
                 return -1;
             }
         }
