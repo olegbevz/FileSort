@@ -22,6 +22,19 @@ namespace FileSort
             return chunkStack == _chunkStack ? _tempChunkStack : _chunkStack;
         }
 
+        public void PushToStackRecursively(List<T> chunk)
+        {
+            if (_chunkStack.LastChunkLength != chunk.Count)
+            {
+                _chunkStack.Push(chunk);
+            }
+            else
+            {
+                var chunkReference = _chunkStack.CreateChunk(chunk);
+                PushToStackRecursively(chunkReference);
+            }
+        }
+
         public void PushToStackRecursively(T[] chunk)
         {
             if (_chunkStack.LastChunkLength != chunk.Length)
@@ -31,19 +44,24 @@ namespace FileSort
             else
             {
                 var chunkReference = _chunkStack.CreateChunk(chunk);
-                var currentStack = _chunkStack;
-                var otherStack = GetOtherChunkStack(_chunkStack);
-                while (currentStack.LastChunkLength == chunkReference.Count)
-                {
-                    var previousChunkLength = otherStack.LastChunkLength;
-                    chunkReference = Merge(chunkReference, currentStack.Pop(), otherStack);
+                PushToStackRecursively(chunkReference);
+            }
+        }
 
-                    if (previousChunkLength == chunkReference.Count)
-                    {
-                        currentStack = otherStack;
-                        otherStack = GetOtherChunkStack(currentStack);
-                        chunkReference = currentStack.Pop();
-                    }
+        protected void PushToStackRecursively(IChunkReference<T> chunkReference)
+        {
+            var currentStack = _chunkStack;
+            var otherStack = GetOtherChunkStack(_chunkStack);
+            while (currentStack.LastChunkLength == chunkReference.Count)
+            {
+                var previousChunkLength = otherStack.LastChunkLength;
+                chunkReference = Merge(chunkReference, currentStack.Pop(), otherStack);
+
+                if (previousChunkLength == chunkReference.Count)
+                {
+                    currentStack = otherStack;
+                    otherStack = GetOtherChunkStack(currentStack);
+                    chunkReference = currentStack.Pop();
                 }
             }
         }

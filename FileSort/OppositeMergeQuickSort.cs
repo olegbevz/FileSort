@@ -47,32 +47,6 @@ namespace FileSort
             _logger.Info("Starting final merge phase...");
 
             return ExecuteFinalMerge();
-        }
-
-        public void PushToStackRecursively(List<T> chunk)
-        {
-            if (_chunkStack.LastChunkLength != chunk.Count)
-            {
-                _chunkStack.Push(chunk);
-            }
-            else
-            {
-                var chunkReference = _chunkStack.CreateChunk(chunk);
-                var currentStack = _chunkStack;
-                var otherStack = GetOtherChunkStack(_chunkStack);
-                while (currentStack.LastChunkLength == chunkReference.Count)
-                {
-                    var previousChunkLength = otherStack.LastChunkLength;
-                    chunkReference = Merge(chunkReference, currentStack.Pop(), otherStack);
-
-                    if (previousChunkLength == chunkReference.Count)
-                    {
-                        currentStack = otherStack;
-                        otherStack = GetOtherChunkStack(currentStack);
-                        chunkReference = currentStack.Pop();
-                    }
-                }
-            }
-        }
+        }        
     }
 }
