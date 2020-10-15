@@ -51,7 +51,7 @@ namespace FileSort
             _chunkStack.Push(currentChunk);
 
             _logger.Info("Reading phase completed");
-            _logger.Info("Starting final phase...");
+            _logger.Info("Starting final merge phase...");
 
             var currentChunkStack = _chunkStack;
             if (_tempChunkStack.Count > 0)
@@ -61,7 +61,7 @@ namespace FileSort
             }
 
             if (currentChunkStack.Count > 1)
-                return Merge(currentChunkStack.ToArray(), _tempChunkStack);
+                return Merge(currentChunkStack.ToArray(), GetOtherChunkStack(currentChunkStack));
 
             if (currentChunkStack.Count == 1)
                 return _chunkStack.Pop();

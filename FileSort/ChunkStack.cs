@@ -97,30 +97,29 @@ namespace FileSort
         {
             var totalSize = leftChunk.TotalSize + rightChunk.TotalSize;
             var totalCount = leftChunk.Count + rightChunk.Count;
-
-            IWritableChunkReference<T> chunkReference = null;
-            if (_currentSize + totalSize > _bufferSize)
-            {
-                chunkReference = new FileChunkReference(0, totalCount, _chunkStorage);
-            }
-
-            chunkReference = new MemoryChunkReference(totalCount, 0);
-            _stack.Push(chunkReference);
-
-            return chunkReference;
+            return CreateChunkForMerge(totalSize, totalCount);
         }
 
         public IWritableChunkReference<T> CreateChunkForMerge(IChunkReference<T>[] chunks)
         {
             var totalSize = chunks.Sum(x => x.TotalSize);
             var totalCount = chunks.Sum(x => x.Count);
+            return CreateChunkForMerge(totalSize, totalCount);
+        }
+
+        private IWritableChunkReference<T> CreateChunkForMerge(long totalSize, int totalCount)
+        {
             IWritableChunkReference<T> chunkReference = null;
             if (_currentSize + totalSize > _bufferSize)
             {
-                chunkReference = new FileChunkReference(0, totalCount, _chunkStorage);
+                chunkReference = new FileChunkReference(totalSize, totalCount, _chunkStorage);
+            }
+            else
+            {
+                chunkReference = new MemoryChunkReference(totalCount, totalSize);
+                _currentSize += totalSize;
             }
 
-            chunkReference = new MemoryChunkReference(totalCount, 0);
             _stack.Push(chunkReference);
 
             return chunkReference;

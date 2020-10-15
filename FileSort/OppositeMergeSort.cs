@@ -49,15 +49,9 @@ namespace FileSort
                 currentChunkStack = _tempChunkStack;
             }
 
-            while (currentChunkStack.Count > 1)
+            if (currentChunkStack.Count > 1)
             {
-                return Merge(currentChunkStack.ToArray(), _tempChunkStack);
-                //var leftChunk = _chunkStack.Pop();
-                //var chunkReference = Merge(leftChunk, _chunkStack.Pop(), _chunkStack);
-                //if (_chunkStack.Count == 0)
-                //    return chunkReference;
-
-                //_chunkStack.Push(chunkReference);
+                return Merge(currentChunkStack.ToArray(), GetOtherChunkStack(currentChunkStack));
             }
 
             if (currentChunkStack.Count == 1)
