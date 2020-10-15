@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -91,7 +92,7 @@ namespace FileSort
             }
         }
 
-        public IWritableChunkReference<T> CreateChunkForMerge(
+        public IChunkWriter<T> CreateChunkForMerge(
             IChunkReference<T> leftChunk, 
             IChunkReference<T> rightChunk)
         {
@@ -100,29 +101,34 @@ namespace FileSort
             return CreateChunkForMerge(totalSize, totalCount);
         }
 
-        public IWritableChunkReference<T> CreateChunkForMerge(IChunkReference<T>[] chunks)
+        public IChunkWriter<T> CreateChunkForMerge(IChunkReference<T>[] chunks)
         {
             var totalSize = chunks.Sum(x => x.TotalSize);
             var totalCount = chunks.Sum(x => x.Count);
             return CreateChunkForMerge(totalSize, totalCount);
         }
 
-        private IWritableChunkReference<T> CreateChunkForMerge(long totalSize, int totalCount)
+        private IChunkWriter<T> CreateChunkForMerge(long totalSize, int totalCount)
         {
-            IWritableChunkReference<T> chunkReference;
+            IChunkWriter<T> chunkWriter;
+            IChunkReference<T> chunkReference;
             if (_currentSize + totalSize > _bufferSize)
             {
-                chunkReference = new FileChunkReference(totalSize, totalCount, _chunkStorage);
+                var fileChunk = new FileChunkReference(totalSize, totalCount, _chunkStorage, true);
+                chunkWriter = fileChunk;
+                chunkReference = fileChunk;
             }
             else
             {
-                chunkReference = new MemoryChunkReference(totalCount, totalSize);
+                var memoryChunk = new MemoryChunkReference(totalCount, totalSize);
+                chunkWriter = memoryChunk;
+                chunkReference = memoryChunk;
                 _currentSize += totalSize;
             }
 
             _stack.Push(chunkReference);
 
-            return chunkReference;
+            return chunkWriter;
         }
 
         public IChunkReference<T> CreateChunk(T[] chunk)
@@ -187,7 +193,7 @@ namespace FileSort
             return new FileChunkReference(size, count, _chunkStorage);
         }
 
-        private class MemoryChunkReference : IWritableChunkReference<T>
+        private class MemoryChunkReference : IChunkReference<T>, IChunkWriter<T>
         {
             private readonly T[] _array;
             private long _index;
@@ -223,11 +229,6 @@ namespace FileSort
                 return _array;
             }
 
-            public void Complete()
-            {
-                _index = 0;
-            }
-
             public void Flush(IChunkStorage<T> chunkStorage)
             {
                 chunkStorage.Push(_array);
@@ -242,18 +243,32 @@ namespace FileSort
             {
                 return this.GetEnumerator();
             }
+
+            IChunkReference<T> IChunkWriter<T>.Complete()
+            {
+                _index = 0;
+                return this;
+            }
+
+            public void Dispose()
+            {
+                _index = 0;
+            }
         }
 
-        private class FileChunkReference : IWritableChunkReference<T>
+        private class FileChunkReference : IChunkReference<T>, IChunkWriter<T>
         {
             private readonly IChunkStorage<T> _chunkStorage;
             private IChunkStorageWriter<T> _chunkStorageWriter;
 
-            public FileChunkReference(long size, int count, IChunkStorage<T> chunkStorage)
+            public FileChunkReference(long size, int count, IChunkStorage<T> chunkStorage, bool chunkWriter = false)
             {
-                _chunkStorage = chunkStorage;
+                _chunkStorage = chunkStorage;                
                 TotalSize = size;
                 Count = count;
+
+                if (chunkWriter)
+                    _chunkStorageWriter = chunkStorage.GetWriter();
             }
 
             public long MemorySize { get { return 0; } }
@@ -268,14 +283,9 @@ namespace FileSort
             public void Write(T value)
             {
                 if (_chunkStorageWriter == null)
-                    _chunkStorageWriter = _chunkStorage.GetWriter();
+                    throw new Exception("Chunk writer was not initialized or already completed");
 
                 _chunkStorageWriter.Write(value);
-            }
-
-            public void Complete()
-            {
-                TotalSize = _chunkStorageWriter.Complete();
             }
 
             public void Flush(IChunkStorage<T> chunkStorage)
@@ -294,6 +304,22 @@ namespace FileSort
             IEnumerator IEnumerable.GetEnumerator()
             {
                 return this.GetEnumerator();
+            }
+
+            IChunkReference<T> IChunkWriter<T>.Complete()
+            {
+                if (_chunkStorageWriter == null)
+                    throw new Exception("Chunk writer was not initialized or already completed");
+                TotalSize = _chunkStorageWriter.Complete();
+                _chunkStorageWriter = null;
+                return this;
+            }
+
+            public void Dispose()
+            {
+                if (_chunkStorageWriter == null)
+                    return;
+                TotalSize = _chunkStorageWriter.Complete();
             }
         }
     }

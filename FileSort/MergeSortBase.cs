@@ -53,22 +53,24 @@ namespace FileSort
             IChunkReference<T> right,
             ChunkStack<T> chunkStack)
         {
-            var chunkWriter = chunkStack.CreateChunkForMerge(left, right);
-            foreach (var value in _sortJoin.Join(left.GetValue(), right.GetValue()))
-                chunkWriter.Write(value);
-            chunkWriter.Complete();
-            return chunkWriter;
+            using (var chunkWriter = chunkStack.CreateChunkForMerge(left, right))
+            {
+                foreach (var value in _sortJoin.Join(left.GetValue(), right.GetValue()))
+                    chunkWriter.Write(value);
+                return chunkWriter.Complete();
+            }
         }
 
         protected IChunkReference<T> Merge(
             IChunkReference<T>[] chunks,
             ChunkStack<T> chunkStack)
         {
-            var chunkWriter = chunkStack.CreateChunkForMerge(chunks);
-            foreach (var value in _sortJoin.Join(chunks.Select(x => x.GetValue()).ToArray()))
-                chunkWriter.Write(value);
-            chunkWriter.Complete();
-            return chunkWriter;
+            using (var chunkWriter = chunkStack.CreateChunkForMerge(chunks))
+            {
+                foreach (var value in _sortJoin.Join(chunks.Select(x => x.GetValue()).ToArray()))
+                    chunkWriter.Write(value);
+                return chunkWriter.Complete();
+            }
         }
 
         protected IEnumerable<T> ExecuteFinalMerge()

@@ -55,6 +55,7 @@
     <Compile Include="ChunkStack.cs" />
     <Compile Include="ConcurrentOppositeMergeQuickSort.cs" />
     <Compile Include="ConstantSizeCalculator.cs" />
+    <Compile Include="IChunkWriter.cs" />
     <Compile Include="MergeSortBase.cs" />
     <Compile Include="OppositeMergeQuickSort.cs" />
     <Compile Include="FileLineReaderWriter.cs" />
@@ -68,7 +69,6 @@
     <Compile Include="ISizeCalculator.cs" />
     <Compile Include="ISortJoin.cs" />
     <Compile Include="ISortMethod.cs" />
-    <Compile Include="IWritableChunkReference.cs" />
     <Compile Include="MergeSortJoin.cs" />
     <Compile Include="OppositeMergeSort.cs" />
     <Compile Include="Program.cs" />
