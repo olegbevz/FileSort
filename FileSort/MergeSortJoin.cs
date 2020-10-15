@@ -63,8 +63,10 @@ namespace FileSort
             var enumerators = new IEnumerator<T>[count];
             var completed = new bool[count];
             int activeCount = count;
+            int startIndex = 0;
+            int endIndex = count;
 
-            for (int i = 0; i < count; i++)
+            for (int i = startIndex; i < endIndex; i++)
             {
                 var enumerator = enumerables[i].GetEnumerator();
                 enumerators[i] = enumerator;
@@ -73,6 +75,8 @@ namespace FileSort
                     activeCount--;
                     completed[i] = true;
                     enumerator.Dispose();
+                    if (startIndex == i) startIndex++;
+                    if (endIndex == i + 1) endIndex--;
                 }
             }
 
@@ -81,7 +85,7 @@ namespace FileSort
                 T minValue = default;
                 int minIndex = 0;
                 bool firstIteration = true;
-                for (int i = 0; i < count; i++)
+                for (int i = startIndex; i < endIndex; i++)
                 {
                     if (completed[i]) continue;
 
@@ -107,6 +111,8 @@ namespace FileSort
                     activeCount--;
                     completed[minIndex] = true;
                     enumerator.Dispose();
+                    if (startIndex == minIndex) startIndex++;
+                    if (endIndex == minIndex + 1) endIndex--;
                 }
             }
         }
