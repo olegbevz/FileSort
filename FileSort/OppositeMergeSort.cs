@@ -31,8 +31,7 @@ namespace FileSort
                 if (chunkPairIndex == ChunkPairSize)
                 {
                     _sortJoin.Join(chunkPair);
-                    var chunkReference = _chunkStack.CreateChunk(chunkPair);
-                    PushToStackRecursively(chunkReference);
+                    PushToStackRecursively(chunkPair);
 
                     chunkPairIndex = 0;
                 }
@@ -43,9 +42,16 @@ namespace FileSort
                 _chunkStack.Push(new T[] { chunkPair[0] });
             }
 
-            while (_chunkStack.Count > 1)
+            var currentChunkStack = _chunkStack;
+            if (_tempChunkStack.Count > 0)
             {
-                return Merge(_chunkStack.ToArray(), _tempChunkStack);
+                Merge(currentChunkStack.ToArray(), _tempChunkStack);
+                currentChunkStack = _tempChunkStack;
+            }
+
+            while (currentChunkStack.Count > 1)
+            {
+                return Merge(currentChunkStack.ToArray(), _tempChunkStack);
                 //var leftChunk = _chunkStack.Pop();
                 //var chunkReference = Merge(leftChunk, _chunkStack.Pop(), _chunkStack);
                 //if (_chunkStack.Count == 0)
@@ -54,32 +60,38 @@ namespace FileSort
                 //_chunkStack.Push(chunkReference);
             }
 
-            if (_chunkStack.Count == 1)
-                return _chunkStack.Pop();
+            if (currentChunkStack.Count == 1)
+                return currentChunkStack.Pop();
 
             return Array.Empty<T>();
         }
 
-        private void PushToStackRecursively(IChunkReference<T> chunkReference)
+        private ChunkStack<T> GetOtherChunkStack(ChunkStack<T> chunkStack)
         {
-            if (_chunkStack.LastChunkLength != chunkReference.Count)
+            return chunkStack == _chunkStack ? _tempChunkStack : _chunkStack;
+        }
+
+        public void PushToStackRecursively(T[] chunk)
+        {
+            if (_chunkStack.LastChunkLength != chunk.Length)
             {
-                _chunkStack.Push(chunkReference);
+                _chunkStack.Push(chunk);
             }
             else
             {
-                while (_chunkStack.LastChunkLength == chunkReference.Count)
+                var chunkReference = _chunkStack.CreateChunk(chunk);
+                var currentStack = _chunkStack;
+                var otherStack = GetOtherChunkStack(_chunkStack);
+                while (currentStack.LastChunkLength == chunkReference.Count)
                 {
-                    chunkReference = Merge(chunkReference, _chunkStack.Pop(), _tempChunkStack);
-                    var previousChunkLength = _chunkStack.LastChunkLength;
-                    _chunkStack.Push(chunkReference);
+                    var previousChunkLength = otherStack.LastChunkLength;
+                    chunkReference = Merge(chunkReference, currentStack.Pop(), otherStack);
+                    
                     if (previousChunkLength == chunkReference.Count)
                     {
-                        chunkReference = _chunkStack.Pop();
-                    }
-                    else
-                    {
-                        break;
+                        currentStack = otherStack;
+                        otherStack = GetOtherChunkStack(currentStack);
+                        chunkReference = currentStack.Pop();
                     }
                 }
             }
