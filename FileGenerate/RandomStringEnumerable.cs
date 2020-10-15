@@ -40,13 +40,14 @@ namespace FileGenerate
 
         private class RandomStringEnumerator : IEnumerator<string>
         {
-            private const char Salt = 'X';
+            private const char Salt = 'x';
 
             private readonly int _minStringSize;
             private readonly long _targetSize;
             private readonly Encoding _targetEncoding;
             private readonly int _separatorSize;
             private readonly IRandomStringFactory _stringFactory;
+            private readonly int _saltSize;
 
             private long _currentSize;
 
@@ -61,6 +62,7 @@ namespace FileGenerate
                 _separatorSize = targetEncoding.GetByteCount(separator);
                 _stringFactory = stringFactory;
                 _minStringSize = _targetEncoding.GetByteCount($"{int.MaxValue}. {Salt}");
+                _saltSize = targetEncoding.GetByteCount(Salt.ToString());
 
                 if (_targetSize > 0 && _targetSize < _minStringSize)
                 {
@@ -91,7 +93,7 @@ namespace FileGenerate
                 var spaceLeft = _targetSize - nextSize - _separatorSize;
                 if (spaceLeft > 0 && spaceLeft <= _minStringSize)
                 {
-                    var charsLeft = (int)(spaceLeft / _targetEncoding.GetByteCount(Salt.ToString()));
+                    var charsLeft = (int)(spaceLeft / _saltSize);
                     current += new string(Salt, charsLeft);
                     stringSize = _targetEncoding.GetByteCount(current);
                 }
