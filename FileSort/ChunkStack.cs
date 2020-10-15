@@ -109,7 +109,7 @@ namespace FileSort
 
         private IWritableChunkReference<T> CreateChunkForMerge(long totalSize, int totalCount)
         {
-            IWritableChunkReference<T> chunkReference = null;
+            IWritableChunkReference<T> chunkReference;
             if (_currentSize + totalSize > _bufferSize)
             {
                 chunkReference = new FileChunkReference(totalSize, totalCount, _chunkStorage);
