@@ -53,8 +53,9 @@
   <ItemGroup>
     <Compile Include="ChunkFileStorage.cs" />
     <Compile Include="ChunkStack.cs" />
+    <Compile Include="ConcurrentOppositeMergeQuickSort.cs" />
     <Compile Include="ConstantSizeCalculator.cs" />
-    <Compile Include="FileLineReader.cs" />
+    <Compile Include="OppositeMergeQuickSort.cs" />
     <Compile Include="FileLineReaderWriter.cs" />
     <Compile Include="FileLineSizeCalculator.cs" />
     <Compile Include="FileSort.cs" />
@@ -65,6 +66,7 @@
     <Compile Include="IChunkStorageWriter.cs" />
     <Compile Include="ISizeCalculator.cs" />
     <Compile Include="ISortJoin.cs" />
+    <Compile Include="ISortMethod.cs" />
     <Compile Include="IWritableChunkReference.cs" />
     <Compile Include="MergeSortJoin.cs" />
     <Compile Include="OppositeMergeSort.cs" />

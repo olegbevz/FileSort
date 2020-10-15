@@ -37,11 +37,10 @@ namespace FileCheck
 
                 using (var fileStream = FileWithBuffer.OpenRead(options.FileName, fileBufferSize))
                 {
+                    FileLine previousLine = FileLine.None;
+                    bool firstLineReaden = false;
                     foreach (var fileLine in new FileLineReader(fileStream))
-                    {                        
-                        bool firstLineReaden = false;
-                        FileLine previousLine = FileLine.None;
-
+                    {
                         if (compareFileLines && firstLineReaden)
                         {
                             if (previousLine.CompareTo(fileLine) > 0)

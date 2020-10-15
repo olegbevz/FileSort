@@ -8,6 +8,6 @@ namespace FileSort
         long TotalSize { get; }
         int Count { get; }
         IEnumerable<T> GetValue();
-        void Flush();
+        void Flush(IChunkStorage<T> storage);
     }
 }

@@ -28,6 +28,7 @@ namespace FileSort.Core
         {
             private readonly StreamReader _streamReader;
             private readonly Stream _stream;
+            private FileLine _current;
 
             public FileLineEnumerator(Stream stream)
             {
@@ -35,7 +36,18 @@ namespace FileSort.Core
                 _streamReader = new StreamReader(_stream);
             }
 
-            public FileLine Current { get; private set; }
+            public FileLine Current
+            {
+                get
+                {
+                    return _current;
+                }
+
+                private set
+                {
+                    _current = value;
+                }
+            }
 
             object IEnumerator.Current
             {
@@ -52,10 +64,14 @@ namespace FileSort.Core
 
             public bool MoveNext()
             {
-                if (_streamReader.EndOfStream)
-                    return false;
+                if (!FileLine.TryParse(_streamReader, out _current))
+                {
+                    if (_streamReader.EndOfStream)
+                        return false;
 
-                Current = FileLine.Parse(_streamReader);
+                    throw new ArgumentException($"Failed to parse stream line '{_streamReader.ReadLine()}'.");
+                }
+
                 return true;
             }
 

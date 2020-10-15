@@ -47,9 +47,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FileSizeAssert.cs" />
+    <Compile Include="Assertions\FileSizeAssert.cs" />
+    <Compile Include="FileCheckTests.cs" />
+    <Compile Include="FileGenerateTests.cs" />
     <Compile Include="FileSortTests.cs" />
-    <Compile Include="ProcessAssert.cs" />
+    <Compile Include="Assertions\ProcessAssert.cs" />
+    <Compile Include="ProcessRunner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -117,6 +120,7 @@
       <Name>FileSort</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

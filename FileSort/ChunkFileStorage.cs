@@ -1,21 +1,21 @@
 ﻿using FileSort.Core;
+using log4net;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 
 namespace FileSort
 {
     public class ChunkFileStorage<T> : IChunkStorage<T>
     {
+        private static readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         private readonly string _fileName;
         private readonly int _fileBuffer;
         private readonly IChunkReaderWriter<T> _readerWriter;
 
         private long _currentPosition = 0;
-        private long _currentSize = 0;
-
-        public long Size { get { return _currentSize; } }
-        public bool IsEmpty { get { return _currentSize == 0; } }
 
         public ChunkFileStorage(string fileName, int fileBuffer, IChunkReaderWriter<T> readerWriter)
         {
@@ -28,6 +28,8 @@ namespace FileSort
         {
             using (var fileStream = FileWithBuffer.OpenAppend(_fileName, _fileBuffer))
             {
+                _logger.Debug($"File '{_fileName}' was opened for write at position {_currentPosition}.");
+
                 fileStream.Seek(_currentPosition, SeekOrigin.Begin);
                 using (var streamWriter = new StreamWriter(fileStream))
                 {
@@ -35,7 +37,8 @@ namespace FileSort
                     streamWriter.Flush();
                     var size = fileStream.Position - _currentPosition;
                     _currentPosition = fileStream.Position;
-                    _currentSize = Math.Max(fileStream.Position, _currentSize);
+
+                    _logger.Debug($"Writing to file '{_fileName}' completed at position {_currentPosition}.");
                     return size;
                 }
             }
@@ -47,13 +50,19 @@ namespace FileSort
                 throw new IndexOutOfRangeException();
 
             var fileStream = FileWithBuffer.OpenRead(_fileName, _fileBuffer);
-            var rangeStream = new RangeStream(fileStream, _currentPosition - size, _currentPosition);
+
+            long endPosition = _currentPosition;
             _currentPosition -= size;
+            _logger.Debug($"File '{_fileName}' was opened for read from position {_currentPosition} to {endPosition}.");
+            
+            var rangeStream = new RangeStream(fileStream, _currentPosition, endPosition);
             return _readerWriter.ReadFromStream(rangeStream);
         }
 
         public IChunkStorageWriter<T> GetWriter()
         {
+            _logger.Debug($"File '{_fileName}' was opened for write at position {_currentPosition}.");
+
             return new ChunkFileStorageWriter(
                 FileWithBuffer.OpenAppend(_fileName, _fileBuffer),
                 _readerWriter,
@@ -98,9 +107,10 @@ namespace FileSort
                 _endPosition = _fileStream.Position;
 
                 _chunkFileStorage._currentPosition = _fileStream.Position;
-                _chunkFileStorage._currentSize = Math.Max(_fileStream.Position, _chunkFileStorage._currentSize);
 
                 _streamWriter.Dispose();
+
+                _logger.Debug($"Writing to file '{_fileStream.Name}' completed at position {_endPosition}.");
 
                 return _endPosition - _startPosition;
             }

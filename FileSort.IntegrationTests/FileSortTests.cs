@@ -1,8 +1,6 @@
-﻿using FileGenerate;
-using FileSort.Core;
+﻿using FileSort.Core;
 using NUnit.Framework;
 using System;
-using System.Diagnostics;
 using System.IO;
 
 namespace FileSort.IntegrationTests
@@ -18,7 +16,7 @@ namespace FileSort.IntegrationTests
         [TestCase("500bytes.txt", "500bytes_sorted.txt", "500bytes_expected.txt", TestName = "ShouldSort500BytesFile")]
         public void ShouldSortFileFromContent(string inputFileName, string outputFileName, string expectedFileName)
         {
-            var process = RunProcess(
+            var process = ProcessRunner.RunProcess(
                 "FileSort.exe", 
                 $"{Path.Combine("Content", inputFileName)} {Path.Combine("Content", outputFileName)}");
 
@@ -38,7 +36,7 @@ namespace FileSort.IntegrationTests
         [TestCase("500bytes.txt", "500bytes_sorted.txt", "500bytes_expected.txt", TestName = "ShouldSort500BytesFileWithoutMemory")]
         public void ShouldSortFileWithoutMemory(string inputFileName, string outputFileName, string expectedFileName)
         {
-            var process = RunProcess(
+            var process = ProcessRunner.RunProcess(
                 "FileSort.exe",
                 $"{Path.Combine("Content", inputFileName)} {Path.Combine("Content", outputFileName)} --memory-buffer 0");
 
@@ -61,6 +59,7 @@ namespace FileSort.IntegrationTests
         [TestCase("10mb", TestName = "ShouldSort10MBRandomFile")]
         [TestCase("10MB", "--memory-buffer 10MB", TestName = "ShouldSort10MBRandomFileWith10MBLimit")]
         [TestCase("100MB", TestName = "ShouldSort100MBRandomFile")]
+        [TestCase("250MB", TestName = "ShouldSort250MBRandomFile")]
         [TestCase("1GB", TestName = "ShouldSort1GBRandomFile", IgnoreReason = "Test is too long. Should be run manually")]
         [TestCase("10GB", TestName = "ShouldSort10GBRandomFile", IgnoreReason = "Test is too long. Should be run manually")]
         [TestCase("100GB", TestName = "ShouldSort100GBRandomFile", IgnoreReason = "Test is too long. Should be run manually")]
@@ -68,69 +67,22 @@ namespace FileSort.IntegrationTests
         {
             var inputFileName = Path.Combine("Content", fileSize + ".txt");
             var outputFileName = Path.Combine("Content", fileSize + "_sorted.txt");
-
-            var generateProcess = RunProcess(
-                "FileGenerate.exe",
-                $"{inputFileName} -s {fileSize}");
-
-            ProcessAssert.HasZeroExitCode(generateProcess, $"File '{inputFileName}' generation failed.");
-
-            inputFileName = Path.Combine(generateProcess.StartInfo.WorkingDirectory, inputFileName);
-            outputFileName = Path.Combine(generateProcess.StartInfo.WorkingDirectory, outputFileName);
-
-            Console.WriteLine($"File '{inputFileName}' was generated in {generateProcess.TotalProcessorTime}.");
-            
             var expectedFileSize = MemorySize.Parse(fileSize);
 
-            FileSizeAssert.HasSize(inputFileName, expectedFileSize);
-
-            var sortProcess = RunProcess(
-                "FileSort.exe",
-                $"{inputFileName} {outputFileName} {sortArguments}");
-
+            var generateProcess = ProcessRunner.RunProcess("FileGenerate.exe", $"{inputFileName} -s {fileSize}");
+            ProcessAssert.HasZeroExitCode(generateProcess, $"File '{inputFileName}' generation failed.");
+            inputFileName = Path.Combine(generateProcess.StartInfo.WorkingDirectory, inputFileName);
+            outputFileName = Path.Combine(generateProcess.StartInfo.WorkingDirectory, outputFileName);
+            Console.WriteLine($"File '{inputFileName}' was generated in {generateProcess.TotalProcessorTime}.");
+                     
+            var sortProcess = ProcessRunner.RunProcess("FileSort.exe", $"{inputFileName} {outputFileName} {sortArguments}");
             ProcessAssert.HasZeroExitCode(sortProcess, $"File '{inputFileName}' sort failed.");
-
             Console.WriteLine($"File '{outputFileName}' was sorted in {sortProcess.TotalProcessorTime}.");
-
             FileSizeAssert.HasSize(outputFileName, expectedFileSize);
 
-            var checkProcess = RunProcess(
-                "FileCheck.exe",
-                $"{outputFileName}");
-
+            var checkProcess = ProcessRunner.RunProcess("FileCheck.exe", $"{outputFileName}");
             Console.WriteLine($"File '{outputFileName}' was checked in {checkProcess.TotalProcessorTime}.");
-
             ProcessAssert.HasZeroExitCode(checkProcess, $"File '{inputFileName}' was not properly sorted or check failed.");         
-        }
-
-        private Process RunProcess(string executable, string arguments)
-        {
-            var currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            var executablePath = Path.Combine(currentDirectory, executable);
-
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = executablePath,
-                Arguments = arguments,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                WorkingDirectory = currentDirectory
-            };
-
-            var process = new Process { StartInfo = startInfo };
-            process.Start();
-
-            while (!process.StandardOutput.EndOfStream)
-            {
-                var line = process.StandardOutput.ReadLine();
-                Console.WriteLine(line);
-            }
-
-            process.WaitForExit();
-
-            return process;
         }
     }
 }
