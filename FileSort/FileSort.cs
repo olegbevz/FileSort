@@ -48,7 +48,7 @@ namespace FileSort
 
                 //var sorter = new OppositeMergeSort<FileLine>(chunkStack, tempChunkStack);
 
-                var sorter = new OppositeMergeQuickSort<FileLine>(chunkStack, tempChunkStack);
+                var sorter = new ConcurrentOppositeMergeQuickSort<FileLine>(chunkStack, tempChunkStack);
 
                 var inputFileLines = new FileLineReader(fileStream);
                 var sortedCollection = sorter.Sort(inputFileLines);
