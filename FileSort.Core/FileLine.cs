@@ -104,6 +104,14 @@ namespace FileSort.Core
             return Number.CompareTo(otherEntry.Number);
         }
 
+        public void WriteTo(StreamWriter streamWriter)
+        {
+            streamWriter.Write(Number);
+            streamWriter.Write('.');
+            streamWriter.Write(' ');
+            streamWriter.WriteLine(Name);
+        }
+
         public override string ToString()
         {
             return $"{Number}. {Name}";
