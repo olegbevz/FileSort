@@ -41,7 +41,7 @@ namespace FileSort
             }
 
             currentChunk.Sort();
-            _chunkStack.Push(currentChunk);
+            PushToStackRecursively(currentChunk);
 
             _logger.Info("Reading phase completed");
             _logger.Info("Starting final merge phase...");

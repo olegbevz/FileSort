@@ -1,5 +1,6 @@
 ﻿using FileSort.Core;
 using System.IO;
+using System.Threading;
 
 namespace FileSort
 {
@@ -46,15 +47,36 @@ namespace FileSort
                     new FileLineSizeCalculator(),
                     tempChunkStorage);
 
-                //var sorter = new OppositeMergeSort<FileLine>(chunkStack, tempChunkStack);
+                //var sorter = new OppositeMergeQuickSort<FileLine>(chunkStack, tempChunkStack);
 
-                var sorter = new ConcurrentOppositeMergeQuickSort<FileLine>(chunkStack, tempChunkStack);
+                var sorter = new ConcurrentOppositeMergeQuickSort<FileLine>(chunkStack, () => CreateTempChunckStack(outputFileName));
 
                 var inputFileLines = new FileLineReader(fileStream);
                 var sortedCollection = sorter.Sort(inputFileLines);
                 if (sortedCollection is IChunkReference<FileLine> chunkReference)
                     chunkReference.Flush(targetChunkStorage);
             }
+        }
+
+        private int tempChunkCounter = 0;
+
+        public ChunkStack<FileLine> CreateTempChunckStack(string outputFileName)
+        {
+            int index = Interlocked.Increment(ref tempChunkCounter);
+
+            var tempFileName = Path.Combine(
+                    Path.GetDirectoryName(outputFileName),
+                    $"{Path.GetFileNameWithoutExtension(outputFileName)}_part{index}{Path.GetExtension(outputFileName)}");
+
+            var tempChunkStorage = new ChunkFileStorage<FileLine>(
+                tempFileName,
+                _fileBufferSize,
+                new FileLineReaderWriter());
+
+            return new ChunkStack<FileLine>(
+                _memoryBufferSize,
+                new FileLineSizeCalculator(),
+                tempChunkStorage);
         }
     }
 }

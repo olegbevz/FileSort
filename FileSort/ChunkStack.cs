@@ -8,6 +8,8 @@ namespace FileSort
 {
     public class ChunkStack<T>
     {
+        public static IChunkReference<T> Empty = new MemoryChunkReference(0, 0);
+
         private Stack<IChunkReference<T>> _stack = new Stack<IChunkReference<T>>();        
         private readonly ISizeCalculator<T> _sizeCalcuator;
         private readonly long _bufferSize;

@@ -1,4 +1,5 @@
-﻿using log4net;
+﻿using FileSort.Core;
+using log4net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,24 +13,26 @@ namespace FileSort
     public class ConcurrentOppositeMergeQuickSort<T> : MergeSortBase<T>, ISortMethod<T> where T : IComparable
     {
         private static readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
+        private readonly Func<ChunkStack<T>> _chunkStackFactory;
         private readonly int _chunkSize;
         private readonly int _concurrency = 4;
 
         private int _concurrencyCounter;
+        private int _mergeConcurrecyCounter;
 
         public ConcurrentOppositeMergeQuickSort(
             ChunkStack<T> chunkStack,
-            ChunkStack<T> tempChunkStack,
+            Func<ChunkStack<T>> chunkStackFactory,
             int chunkSize = 100000)
-            : base(chunkStack, tempChunkStack)
+            : base(chunkStack, null)
         {
+            _chunkStackFactory = chunkStackFactory;
             _chunkSize = chunkSize;
         }
         public IEnumerable<T> Sort(IEnumerable<T> source)
         {
             var readChannel = Channel.CreateUnbounded<List<T>>(new UnboundedChannelOptions { SingleWriter = true, SingleReader = false, AllowSynchronousContinuations = false });
-            var sortChannel = Channel.CreateUnbounded<List<T>>(new UnboundedChannelOptions { SingleWriter = false, SingleReader = true, AllowSynchronousContinuations = false });
+            var sortChannel = Channel.CreateUnbounded<List<T>>(new UnboundedChannelOptions { SingleWriter = false, SingleReader = false, AllowSynchronousContinuations = false });
 
             var readTask = Task.Run(() => ReadChunks(source, readChannel.Writer));
             var sortTasks = new Task[_concurrency];
@@ -37,14 +40,23 @@ namespace FileSort
             {
                 sortTasks[i] = Task.Run(async () => await SortChunks(readChannel.Reader, sortChannel.Writer));
             }
-            var mergeTask = Task.Run(async () => await MergeChunks(sortChannel.Reader));
+            var mergeTasks = new Task<IChunkReference<T>>[_concurrency];
+            for (int i = 0; i < _concurrency; i++)
+            {
+                mergeTasks[i] = Task.Run(async () => await MergeChunks(sortChannel.Reader));
+            }
 
             readTask.Wait();
             Task.WaitAll(sortTasks);
             sortChannel.Writer.Complete();
-            mergeTask.Wait();
+            Task.WaitAll(mergeTasks);
 
-            return ExecuteFinalMerge();
+            var chunks = mergeTasks.Select(x => x.Result).ToArray();
+            return _appender.Merge(chunks, _chunkStack);
+
+            //return ExecuteFinalMerge();
+
+            return Array.Empty<T>();
         }
 
         private async Task ReadChunks(IEnumerable<T> source, ChannelWriter<List<T>> channelWriter)
@@ -100,20 +112,29 @@ namespace FileSort
             _logger.Info($"{index}. Sorting phase is completed.");
         }
 
-        private async Task MergeChunks(ChannelReader<List<T>> channelReader)
+        private async Task<IChunkReference<T>> MergeChunks(ChannelReader<List<T>> channelReader)
         {
-            _logger.Info("Started merging phase...");
+            int index = Interlocked.Increment(ref _mergeConcurrecyCounter);
+
+            _logger.Info($"{index} Started merging phase...");
+
+            var chunkStack = _chunkStackFactory();
+            var secondaryChunkStack = _chunkStackFactory();
+            var appender = new ChunkStackAppender(chunkStack, secondaryChunkStack);
 
             while (await channelReader.WaitToReadAsync())
             {
                 if (channelReader.TryRead(out var chunk))
                 {
-                    _logger.Info("Chunk push to the stack");
-                    PushToStackRecursively(chunk);
+                    _logger.Debug($"{index} Received chunk for merge");
+                    appender.PushToStackRecursively(chunk);
+                    _logger.Debug($"{index} Chunk push to the stack");
                 }
             }
 
-            _logger.Info("Merging phase is completed.");
+            _logger.Info($"{index} Merging phase is completed.");
+
+            return appender.ExecuteFinalMerge();            
         }
     }
 }
