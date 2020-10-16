@@ -16,6 +16,7 @@ namespace FileSort
         private readonly Func<ChunkStack<T>> _chunkStackFactory;
         private readonly int _chunkSize;
         private readonly int _concurrency = 4;
+        private readonly int _channelCapacity = 10; 
 
         private int _concurrencyCounter;
         private int _mergeConcurrecyCounter;
@@ -31,8 +32,8 @@ namespace FileSort
         }
         public IEnumerable<T> Sort(IEnumerable<T> source)
         {
-            var readChannel = Channel.CreateUnbounded<List<T>>(new UnboundedChannelOptions { SingleWriter = true, SingleReader = false, AllowSynchronousContinuations = false });
-            var sortChannel = Channel.CreateUnbounded<List<T>>(new UnboundedChannelOptions { SingleWriter = false, SingleReader = false, AllowSynchronousContinuations = false });
+            var readChannel = CreateReadChannel();
+            var sortChannel = CreateSortChannel();
 
             var readTask = Task.Run(() => ReadChunks(source, readChannel.Writer));
             var sortTasks = new Task[_concurrency];
@@ -54,9 +55,27 @@ namespace FileSort
             var chunks = mergeTasks.Select(x => x.Result).ToArray();
             return _appender.Merge(chunks, _chunkStack);
 
-            //return ExecuteFinalMerge();
-
             return Array.Empty<T>();
+        }
+
+        private Channel<List<T>> CreateSortChannel()
+        {
+            return Channel.CreateBounded<List<T>>(new BoundedChannelOptions(_channelCapacity)
+            {
+                SingleWriter = false,
+                SingleReader = false,
+                AllowSynchronousContinuations = false
+            });
+        }
+
+        private Channel<List<T>> CreateReadChannel()
+        {
+            return Channel.CreateBounded<List<T>>(new BoundedChannelOptions(_channelCapacity)
+            {
+                SingleWriter = true,
+                SingleReader = false,
+                AllowSynchronousContinuations = false
+            });
         }
 
         private async Task ReadChunks(IEnumerable<T> source, ChannelWriter<List<T>> channelWriter)
