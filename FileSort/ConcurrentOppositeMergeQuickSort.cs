@@ -1,8 +1,6 @@
-﻿using FileSort.Core;
-using log4net;
+﻿using log4net;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Channels;
@@ -13,21 +11,19 @@ namespace FileSort
     public class ConcurrentOppositeMergeQuickSort<T> : MergeSortBase<T>, ISortMethod<T> where T : IComparable
     {
         private static readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        private readonly Func<ChunkStack<T>> _chunkStackFactory;
+
         private readonly int _chunkSize;
-        private readonly int _concurrency = 4;
+        private readonly int _concurrency = 10;
         private readonly int _channelCapacity = 10; 
 
         private int _concurrencyCounter;
-        private int _mergeConcurrecyCounter;
 
         public ConcurrentOppositeMergeQuickSort(
             ChunkStack<T> chunkStack,
-            Func<ChunkStack<T>> chunkStackFactory,
-            int chunkSize = 100000)
-            : base(chunkStack, null)
+            ChunkStack<T> tempChunkStack,
+            int chunkSize = 3000000)
+            : base(chunkStack, tempChunkStack)
         {
-            _chunkStackFactory = chunkStackFactory;
             _chunkSize = chunkSize;
         }
         public IEnumerable<T> Sort(IEnumerable<T> source)
@@ -35,27 +31,19 @@ namespace FileSort
             var readChannel = CreateReadChannel();
             var sortChannel = CreateSortChannel();
 
-            var readTask = Task.Run(() => ReadChunks(source, readChannel.Writer));
+            var readTask = Task.Run(() => ReadChunks(source, readChannel.Writer).ConfigureAwait(false));
             var sortTasks = new Task[_concurrency];
             for (int i = 0; i < _concurrency; i++)
             {
-                sortTasks[i] = Task.Run(async () => await SortChunks(readChannel.Reader, sortChannel.Writer));
+                sortTasks[i] = Task.Run(async () => await SortChunks(readChannel.Reader, sortChannel.Writer).ConfigureAwait(false));
             }
-            var mergeTasks = new Task<IChunkReference<T>>[_concurrency];
-            for (int i = 0; i < _concurrency; i++)
-            {
-                mergeTasks[i] = Task.Run(async () => await MergeChunks(sortChannel.Reader));
-            }
+            var mergeTask = Task.Run(async () => await PushChunksToStackAndMerge(sortChannel.Reader).ConfigureAwait(false));
 
             readTask.Wait();
             Task.WaitAll(sortTasks);
             sortChannel.Writer.Complete();
-            Task.WaitAll(mergeTasks);
-
-            var chunks = mergeTasks.Select(x => x.Result).ToArray();
-            return _appender.Merge(chunks, _chunkStack);
-
-            return Array.Empty<T>();
+            mergeTask.Wait();
+            return mergeTask.Result;
         }
 
         private Channel<List<T>> CreateSortChannel()
@@ -95,7 +83,7 @@ namespace FileSort
                 else
                 {
                     _logger.Debug($"Chunk readen from input source");
-                    await channelWriter.WriteAsync(currentChunk);
+                    await channelWriter.WriteAsync(currentChunk).ConfigureAwait(false);
                     _logger.Debug($"Chunk pushed to channel");
                     currentChunk = new List<T>();
                     currentChunkSize = 0;
@@ -103,11 +91,10 @@ namespace FileSort
             }
 
             _logger.Debug($"Chunk readen from input source");
-            await channelWriter.WriteAsync(currentChunk);
+            await channelWriter.WriteAsync(currentChunk).ConfigureAwait(false);
             _logger.Debug($"Chunk pushed to channel");
 
             channelWriter.Complete();
-
             _logger.Info("Reading phase is completed.");
         }        
 
@@ -117,43 +104,36 @@ namespace FileSort
 
             _logger.Info($"{index}. Started sorting phase...");
 
-            while (await channelReader.WaitToReadAsync())
+            while (await channelReader.WaitToReadAsync().ConfigureAwait(false))
             {
                 if (channelReader.TryRead(out var chunk))
                 {
                     _logger.Debug($"{index}. Chunk sorting");
                     chunk.Sort();
                     _logger.Debug($"{index}. Chunk sorted");
-                    await channelWriter.WriteAsync(chunk);
+                    await channelWriter.WriteAsync(chunk).ConfigureAwait(false);
                 }
             }
 
             _logger.Info($"{index}. Sorting phase is completed.");
         }
 
-        private async Task<IChunkReference<T>> MergeChunks(ChannelReader<List<T>> channelReader)
+        private async Task<IChunkReference<T>> PushChunksToStackAndMerge(ChannelReader<List<T>> channelReader)
         {
-            int index = Interlocked.Increment(ref _mergeConcurrecyCounter);
-
-            _logger.Info($"{index} Started merging phase...");
-
-            var chunkStack = _chunkStackFactory();
-            var secondaryChunkStack = _chunkStackFactory();
-            var appender = new ChunkStackAppender(chunkStack, secondaryChunkStack);
-
-            while (await channelReader.WaitToReadAsync())
+            while (await channelReader.WaitToReadAsync().ConfigureAwait(false))
             {
                 if (channelReader.TryRead(out var chunk))
                 {
-                    _logger.Debug($"{index} Received chunk for merge");
-                    appender.PushToStackRecursively(chunk);
-                    _logger.Debug($"{index} Chunk push to the stack");
+                    _chunkStack.Push(chunk);
                 }
             }
 
-            _logger.Info($"{index} Merging phase is completed.");
+            if (_chunkStack.Count == 0)
+                return null;
 
-            return appender.ExecuteFinalMerge();            
+            _logger.Info("Starting final merge");
+
+            return _appender.ExecuteFinalMerge();
         }
     }
 }

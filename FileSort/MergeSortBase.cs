@@ -9,13 +9,14 @@ namespace FileSort
         protected readonly ISortJoin<T> _sortJoin = new MergeSortJoin<T>();
 
         protected readonly ChunkStack<T> _chunkStack;
-        //protected readonly ChunkStack<T> _tempChunkStack;
+        protected readonly ChunkStack<T> _tempChunkStack;
 
         protected readonly ChunkStackAppender _appender;
 
         protected MergeSortBase(ChunkStack<T> chunkStack, ChunkStack<T> tempChunkStack)
         {
             _appender = new ChunkStackAppender(chunkStack, tempChunkStack);
+            _tempChunkStack = tempChunkStack;
             _chunkStack = chunkStack;
         }
 
@@ -114,8 +115,12 @@ namespace FileSort
             {
                 using (var chunkWriter = chunkStack.CreateChunkForMerge(chunks))
                 {
+
                     foreach (var value in _sortJoin.Join(chunks.Select(x => x.GetValue()).ToArray()))
+                    {
                         chunkWriter.Write(value);
+                    }
+
                     return chunkWriter.Complete();
                 }
             }
