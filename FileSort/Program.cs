@@ -34,8 +34,10 @@ namespace FileSort
                 _logger.Info($"Starting to sort file '{options.InputFileName}'...");
 
                 var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer);
+                var streamBufferSize = (int)MemorySize.Parse(options.StreamBuffer);
                 var memoryBufferSize = MemorySize.Parse(options.MemoryBuffer);
-                var fileSort = new FileSort(fileBufferSize, memoryBufferSize);
+
+                var fileSort = new FileSort(fileBufferSize, streamBufferSize, memoryBufferSize);
                 fileSort.Sort(options.InputFileName, options.OutputFileName);
                 _logger.Info($"File '{options.InputFileName}' has been successfully sorted.");
                 return 0;

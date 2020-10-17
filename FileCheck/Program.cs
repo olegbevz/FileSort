@@ -33,13 +33,14 @@ namespace FileCheck
             try
             {
                 var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer);
+                var streamBufferSize = (int)MemorySize.Parse(options.StreamBuffer);
                 bool compareFileLines = !options.OnlyCheckFormat;
 
                 using (var fileStream = FileWithBuffer.OpenRead(options.FileName, fileBufferSize))
                 {
                     FileLine previousLine = FileLine.None;
                     bool firstLineReaden = false;
-                    foreach (var fileLine in new FileLineReader(fileStream))
+                    foreach (var fileLine in new FileLineReader(fileStream, streamBufferSize))
                     {
                         if (compareFileLines && firstLineReaden)
                         {

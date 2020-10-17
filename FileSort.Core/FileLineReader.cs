@@ -14,15 +14,17 @@ namespace FileSort.Core
         private const long WritePositionFrequency = 1000000;
 
         private readonly Stream _stream;
+        private readonly int _streamBuffer;
 
-        public FileLineReader(Stream stream)
+        public FileLineReader(Stream stream, int streamBuffer)
         {
             _stream = stream;
+            _streamBuffer = streamBuffer;
         }
 
         public IEnumerator<FileLine> GetEnumerator()
         {
-            return new FileLineEnumerator(_stream);
+            return new FileLineEnumerator(_stream, _streamBuffer);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -37,10 +39,10 @@ namespace FileSort.Core
             private FileLine _current;
             private long currentLine;
 
-            public FileLineEnumerator(Stream stream)
+            public FileLineEnumerator(Stream stream, int streamBuffer)
             {
                 _stream = stream;
-                _streamReader = new StreamReader(_stream);
+                _streamReader = new StreamReader(_stream, Encoding.UTF8, false, streamBuffer);
             }
 
             public FileLine Current

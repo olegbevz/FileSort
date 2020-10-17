@@ -7,13 +7,13 @@ namespace FileSort
     public class FileSort
     {
         private readonly int _fileBufferSize;
+        private readonly int _streamBuffer;
         private readonly long _memoryBufferSize;
-
-        public FileSort(int fileBufferSize, long memoryBufferSize)
+        public FileSort(int fileBufferSize, int streamBuffer, long memoryBufferSize)
         {
             _fileBufferSize = fileBufferSize;
             _memoryBufferSize = memoryBufferSize;
-            
+            _streamBuffer = streamBuffer;
         }
 
         public void Sort(string inputFileName, string outputFileName)
@@ -21,7 +21,7 @@ namespace FileSort
             using (var fileStream = FileWithBuffer.OpenRead(inputFileName, _fileBufferSize))
             {
                 var fileSize = fileStream.Length;
-                var readerWriter = new FileLineReaderWriter();
+                var readerWriter = new FileLineReaderWriter(_streamBuffer);
 
                 var targetChunkStorage = new ChunkFileStorage<FileLine>(
                     outputFileName, 
@@ -51,7 +51,7 @@ namespace FileSort
 
                 var sorter = new ConcurrentOppositeMergeQuickSort<FileLine>(chunkStack, tempChunkStack);
 
-                var inputFileLines = new FileLineReader(fileStream);
+                var inputFileLines = new FileLineReader(fileStream, _streamBuffer);
                 var sortedCollection = sorter.Sort(inputFileLines);
                 if (sortedCollection is IChunkReference<FileLine> chunkReference)
                     chunkReference.Flush(targetChunkStorage);
@@ -71,7 +71,7 @@ namespace FileSort
             var tempChunkStorage = new ChunkFileStorage<FileLine>(
                 tempFileName,
                 _fileBufferSize,
-                new FileLineReaderWriter());
+                new FileLineReaderWriter(_streamBuffer));
 
             return new ChunkStack<FileLine>(
                 _memoryBufferSize,

@@ -8,6 +8,8 @@ namespace FileCheck
         public string FileName { get; set; }
         [Option("file-buffer", Required = false, Default = "1MB", HelpText = "Size of FileStream internal buffer")]
         public string FileBuffer { get; set; }
+        [Option("stream-buffer", Required = false, Default = "100MB", HelpText = "Size of StreamReader internal buffer")]
+        public string StreamBuffer { get; set; }
         [Option("check-format", Required = false)]
         public bool OnlyCheckFormat { get; set; }
     }
