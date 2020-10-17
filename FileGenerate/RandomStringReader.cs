@@ -40,16 +40,13 @@ namespace FileGenerate
 
         private class RandomStringEnumerator : IEnumerator<string>
         {
-            private const char Salt = 'x';
-
             private readonly int _minStringSize;
             private readonly long _targetSize;
             private readonly Encoding _targetEncoding;
             private readonly int _separatorSize;
             private readonly IRandomStringFactory _stringFactory;
-            private readonly int _saltSize;
 
-            private long _currentSize;
+            private long _leftSize;
 
             public RandomStringEnumerator(
                 long targetSize, 
@@ -61,8 +58,8 @@ namespace FileGenerate
                 _targetEncoding = targetEncoding;
                 _separatorSize = targetEncoding.GetByteCount(separator);
                 _stringFactory = stringFactory;
-                _minStringSize = _targetEncoding.GetByteCount($"{int.MaxValue}. {Salt}");
-                _saltSize = targetEncoding.GetByteCount(Salt.ToString());
+                _minStringSize = _targetEncoding.GetByteCount($"{int.MaxValue}. X");
+                _leftSize = _targetSize;
 
                 if (_targetSize > 0 && _targetSize < _minStringSize)
                 {
@@ -83,38 +80,27 @@ namespace FileGenerate
 
             public bool MoveNext()
             {
-                if (_currentSize >= _targetSize)
+                if (_leftSize <= 0)
                     return false;
 
                 var current = _stringFactory.Create();
                 var stringSize = _targetEncoding.GetByteCount(current);
-                var nextSize = _currentSize + stringSize;
+                var nextLeftSize = _leftSize - stringSize - _separatorSize;
 
-                var spaceLeft = _targetSize - nextSize - _separatorSize;
-                if (spaceLeft > 0 && spaceLeft <= _minStringSize)
+                if (nextLeftSize <= _minStringSize)
                 {
-                    var charsLeft = (int)(spaceLeft / _saltSize);
-                    var stringBuilder = new StringBuilder(current);
-                    for (int i = 0; i < charsLeft; i++)
-                        stringBuilder.Append(Salt);
-                    current = stringBuilder.ToString();
-                    stringSize = _targetEncoding.GetByteCount(current);
-                }
-                else if (nextSize >= _targetSize)
-                {
-                    current = current.Substring(0, current.Length - (int)(nextSize - _targetSize + _separatorSize));
+                    current = _stringFactory.Create((int)(_leftSize - _separatorSize));
                     stringSize = _targetEncoding.GetByteCount(current);
                 }
 
-                _currentSize += stringSize;
-                _currentSize += _separatorSize;
+                _leftSize -= stringSize;
+                _leftSize -= _separatorSize;
                 Current = current;
                 return true;
             }
 
             public void Reset()
             {
-                _currentSize = 0;
             }
         }
     }

@@ -13,7 +13,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileGenerate", "FileGenerat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileCheck", "FileCheck\FileCheck.csproj", "{88B760E6-5F7B-43A9-B3EA-EBBC7BD97E7E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileSort.Core", "FileSort.Core\FileSort.Core.csproj", "{A53F97AA-FE9E-4716-80CC-946368C508C0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileSort.Core", "FileSort.Core\FileSort.Core.csproj", "{A53F97AA-FE9E-4716-80CC-946368C508C0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileGenerate.UnitTests", "FileGenerate.UnitTests\FileGenerate.UnitTests.csproj", "{FC2BA532-956E-4207-B183-F5FEDE6653D3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{A53F97AA-FE9E-4716-80CC-946368C508C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A53F97AA-FE9E-4716-80CC-946368C508C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A53F97AA-FE9E-4716-80CC-946368C508C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC2BA532-956E-4207-B183-F5FEDE6653D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC2BA532-956E-4207-B183-F5FEDE6653D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC2BA532-956E-4207-B183-F5FEDE6653D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC2BA532-956E-4207-B183-F5FEDE6653D3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

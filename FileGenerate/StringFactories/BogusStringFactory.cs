@@ -2,23 +2,23 @@
 
 namespace FileGenerate
 {
-    public class BogusStringFactory : IRandomStringFactory
+    public class BogusStringFactory : RandomStringFactoryBase
     {
-        private static readonly Faker<FileEntry> _faker = new Faker<FileEntry>()
-            .StrictMode(true)
-            .RuleFor(x => x.Number, x => x.Random.Number(0, 10000))
-            .RuleFor(x => x.Name, x => x.Company.CompanyName());
+        private static readonly Faker _faker = new Faker();
 
-        public string Create()
+        protected override int GetNextNumber(int maxNumber)
         {
-            var entry = _faker.Generate();
-            return $"{entry.Number}. {entry.Name}";
+            return _faker.Random.Number(0, maxNumber);
         }
 
-        private class FileEntry
+        protected override int GetNextSentenceLength(int maxSentenceLength)
         {
-            public int Number { get; set; }
-            public string Name { get; set; }
+            return _faker.Random.Number(1, maxSentenceLength);
+        }
+
+        protected override string GetNextWord()
+        {
+            return _faker.Company.CompanyName();
         }
     }
 }

@@ -57,7 +57,7 @@ namespace FileGenerate
         {
             switch (stringFactory)
             {
-                case StringFactory.Constant: return new ConstantStringFactory("32. Cherry is the best");
+                case StringFactory.Constant: return new ConstantStringFactory(32, "Cherry is the best");
                 case StringFactory.Sequence: return new SequenceStringFactory();
                 case StringFactory.Random: return new RandomStringFactory();
                 case StringFactory.Bogus: return new BogusStringFactory();

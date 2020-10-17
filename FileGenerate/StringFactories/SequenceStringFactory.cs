@@ -2,9 +2,7 @@
 {
     public class SequenceStringFactory : RandomStringFactoryBase
     {
-        private readonly int _maxNumber;
         private readonly int _numberStep;
-        private readonly int _maxSentenceLegth;
         private readonly int _sentenceLengthStep;
         private readonly int _wordNumberStep;
 
@@ -13,27 +11,23 @@
         private int _wordNumberCounter;
 
         public SequenceStringFactory(
-            int maxNumber = 1000000, 
             int numberStep = 23,
-            int maxSentenceLegth = 10,
             int sentenceLengthStep = 3, 
             int wordNumberStep = 4)
         {
-            _maxNumber = maxNumber;
             _numberStep = numberStep;
-            _maxSentenceLegth = maxSentenceLegth;
             _sentenceLengthStep = sentenceLengthStep;
             _wordNumberStep = wordNumberStep;
         }
 
-        protected override int GetNextNumber()
+        protected override int GetNextNumber(int maxNumber)
         {
-            return GetNextRandomNumber(ref _numberCounter, _numberStep, 0, _maxNumber);
+            return GetNextRandomNumber(ref _numberCounter, _numberStep, 0, maxNumber);
         }
 
-        protected override int GetNextSentenceLength()
+        protected override int GetNextSentenceLength(int maxSentenceLegth)
         {
-            return GetNextRandomNumber(ref _sentenceLegthCounter, _sentenceLengthStep, 1, _maxSentenceLegth);
+            return GetNextRandomNumber(ref _sentenceLegthCounter, _sentenceLengthStep, 1, maxSentenceLegth);
         }
 
         protected override int GetNextWordNumber(int maxWordNumber)

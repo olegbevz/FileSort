@@ -10,6 +10,8 @@ namespace FileSort.IntegrationTests
     public class FileGenerateTests
     {
         [TestCase("0bytes", TestName = "ShouldGenerateEmptyFile")]
+        [TestCase("100bytes", TestName = "ShouldGenerate100bytesFile")]
+        [TestCase("1KB", TestName = "ShouldGenerate1KBFile")]
         [TestCase("10KB", TestName = "ShouldGenerate10KBFile")]
         [TestCase("100KB", TestName = "ShouldGenerate100KBFile")]
         [TestCase("1MB", TestName = "ShouldGenerate1MBFile")]
