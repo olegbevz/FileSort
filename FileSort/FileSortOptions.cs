@@ -14,5 +14,11 @@ namespace FileSort
         public string StreamBuffer { get; set; }
         [Option("memory-buffer", Required = false, Default = "100MB", HelpText = "Size of memory buffer")]
         public string MemoryBuffer { get; set; }
+        [Option("quick-sort-size", Required = false, HelpText = "Amount of records which will be quicksorted in memory before mergesort")]
+        public int? QuickSortSize { get; set; }
+        [Option("channel-capacity", Required = false, Default = 10, HelpText = "Capacity of channel in concurrent sorting method")]
+        public int ChannelCapacity { get; set; }
+        [Option("concurrency", Required = false, Default = 10, HelpText = "Number of concurrent sorting operations in concurrent sorting methods")]
+        public int Concurrency { get; set; }
     }
 }

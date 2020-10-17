@@ -12,18 +12,22 @@ namespace FileSort.Core
         private static readonly ILog _logger = LogProvider.GetCurrentClassLogger();
 
         private readonly int _chunkSize;
-        private readonly int _concurrency = 10;
-        private readonly int _channelCapacity = 10; 
+        private readonly int _concurrency;
+        private readonly int _channelCapacity; 
 
         private int _concurrencyCounter;
 
         public ConcurrentOppositeMergeQuickSort(
             ChunkStack<T> chunkStack,
             ChunkStack<T> tempChunkStack,
+            int channelCapacity = 10,
+            int concurrency = 10,
             int chunkSize = 3000000)
             : base(chunkStack, tempChunkStack)
         {
             _chunkSize = chunkSize;
+            _channelCapacity = channelCapacity;
+            _concurrency = concurrency;
         }
         public IEnumerable<T> Sort(IEnumerable<T> source)
         {

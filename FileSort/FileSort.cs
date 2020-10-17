@@ -1,18 +1,24 @@
 ﻿using FileSort.Core;
 using System.IO;
-using System.Threading;
 
 namespace FileSort
 {
+
     public class FileSort
     {
         private readonly int _fileBufferSize;
         private readonly int _streamBuffer;
         private readonly long _memoryBufferSize;
-        public FileSort(int fileBufferSize, int streamBuffer, long memoryBufferSize)
+        private readonly ISortMethodFactory _sortMethodFactory;
+        public FileSort(
+            int fileBufferSize, 
+            int streamBuffer, 
+            long memoryBufferSize,
+            ISortMethodFactory sortMethodFactory)
         {
             _fileBufferSize = fileBufferSize;
             _memoryBufferSize = memoryBufferSize;
+            _sortMethodFactory = sortMethodFactory;
             _streamBuffer = streamBuffer;
         }
 
@@ -47,36 +53,13 @@ namespace FileSort
                     new FileLineSizeCalculator(),
                     tempChunkStorage);
 
-                //var sorter = new OppositeMergeQuickSort<FileLine>(chunkStack, tempChunkStack);
-
-                var sorter = new ConcurrentOppositeMergeQuickSort<FileLine>(chunkStack, tempChunkStack);
+                var sortMethod = _sortMethodFactory.CreateSortMethod<FileLine>(chunkStack, tempChunkStack);
 
                 var inputFileLines = new FileLineReader(fileStream, _streamBuffer);
-                var sortedCollection = sorter.Sort(inputFileLines);
+                var sortedCollection = sortMethod.Sort(inputFileLines);
                 if (sortedCollection is IChunkReference<FileLine> chunkReference)
                     chunkReference.Flush(targetChunkStorage);
             }
-        }
-
-        private int tempChunkCounter = 0;
-
-        public ChunkStack<FileLine> CreateTempChunckStack(string outputFileName)
-        {
-            int index = Interlocked.Increment(ref tempChunkCounter);
-
-            var tempFileName = Path.Combine(
-                    Path.GetDirectoryName(outputFileName),
-                    $"{Path.GetFileNameWithoutExtension(outputFileName)}_part{index}{Path.GetExtension(outputFileName)}");
-
-            var tempChunkStorage = new ChunkFileStorage<FileLine>(
-                tempFileName,
-                _fileBufferSize,
-                new FileLineReaderWriter(_streamBuffer));
-
-            return new ChunkStack<FileLine>(
-                _memoryBufferSize,
-                new FileLineSizeCalculator(),
-                tempChunkStorage);
         }
     }
 }
