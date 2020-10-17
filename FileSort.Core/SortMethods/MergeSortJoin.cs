@@ -15,44 +15,44 @@ namespace FileSort.Core
             }
         }
 
-        public IEnumerable<T> Join(IEnumerable<T> left, IEnumerable<T> right)
+        public IEnumerable<T> Join(IEnumerable<T> first, IEnumerable<T> second)
         {
-            using (var leftEnumerator = left.GetEnumerator())
-            using (var rightEnumerator = right.GetEnumerator())
+            using (var firstEnumerator = first.GetEnumerator())
+            using (var secondEnumerator = second.GetEnumerator())
             {
-                bool leftActive = leftEnumerator.MoveNext();
-                bool rightActive = rightEnumerator.MoveNext();
+                bool firstActive = firstEnumerator.MoveNext();
+                bool secondActive = secondEnumerator.MoveNext();
 
-                while (leftActive && rightActive)
+                while (firstActive && secondActive)
                 {
-                    if (leftEnumerator.Current.CompareTo(rightEnumerator.Current) < 0)
+                    if (firstEnumerator.Current.CompareTo(secondEnumerator.Current) < 0)
                     {
-                        yield return leftEnumerator.Current;
-                        leftActive = leftEnumerator.MoveNext();
+                        yield return firstEnumerator.Current;
+                        firstActive = firstEnumerator.MoveNext();
                     }
                     else
                     {
-                        yield return rightEnumerator.Current;
-                        rightActive = rightEnumerator.MoveNext();
+                        yield return secondEnumerator.Current;
+                        secondActive = secondEnumerator.MoveNext();
                     }
                 }
 
-                if (leftActive)
+                if (firstActive)
                 {
                     do
                     {
-                        yield return leftEnumerator.Current;
+                        yield return firstEnumerator.Current;
                     }
-                    while (leftEnumerator.MoveNext());
+                    while (firstEnumerator.MoveNext());
                 }
 
-                if (rightActive)
+                if (secondActive)
                 {
                     do
                     {
-                        yield return rightEnumerator.Current;
+                        yield return secondEnumerator.Current;
                     }
-                    while (rightEnumerator.MoveNext());
+                    while (secondEnumerator.MoveNext());
                 }
             }
         }
@@ -66,53 +66,67 @@ namespace FileSort.Core
             int startIndex = 0;
             int endIndex = count;
 
-            for (int i = startIndex; i < endIndex; i++)
+            try
             {
-                var enumerator = enumerables[i].GetEnumerator();
-                enumerators[i] = enumerator;
-                if (!enumerator.MoveNext())
-                {
-                    activeCount--;
-                    completed[i] = true;
-                    enumerator.Dispose();
-                    if (startIndex == i) startIndex++;
-                    if (endIndex == i + 1) endIndex--;
-                }
-            }
 
-            while (activeCount > 0)
-            {
-                T minValue = default;
-                int minIndex = 0;
-                bool firstIteration = true;
                 for (int i = startIndex; i < endIndex; i++)
                 {
-                    if (completed[i]) continue;
-
-                    var current = enumerators[i].Current;
-                    if (firstIteration)
+                    var enumerator = enumerables[i].GetEnumerator();
+                    enumerators[i] = enumerator;
+                    if (!enumerator.MoveNext())
                     {
-                        minValue = current;
-                        minIndex = i;
-                        firstIteration = false;
-                    }
-                    else if (current.CompareTo(minValue) < 0)
-                    {
-                        minValue = current;
-                        minIndex = i;
+                        activeCount--;
+                        completed[i] = true;
+                        enumerator.Dispose();
+                        if (startIndex == i) startIndex++;
+                        if (endIndex == i + 1) endIndex--;
                     }
                 }
 
-                yield return minValue;
-
-                var enumerator = enumerators[minIndex];
-                if (!enumerator.MoveNext())
+                while (activeCount > 0)
                 {
-                    activeCount--;
-                    completed[minIndex] = true;
-                    enumerator.Dispose();
-                    if (startIndex == minIndex) startIndex++;
-                    if (endIndex == minIndex + 1) endIndex--;
+                    T minValue = default;
+                    int minIndex = 0;
+                    bool firstIteration = true;
+                    for (int i = startIndex; i < endIndex; i++)
+                    {
+                        if (completed[i]) continue;
+
+                        var current = enumerators[i].Current;
+                        if (firstIteration)
+                        {
+                            minValue = current;
+                            minIndex = i;
+                            firstIteration = false;
+                        }
+                        else if (current.CompareTo(minValue) < 0)
+                        {
+                            minValue = current;
+                            minIndex = i;
+                        }
+                    }
+
+                    yield return minValue;
+
+                    var enumerator = enumerators[minIndex];
+                    if (!enumerator.MoveNext())
+                    {
+                        activeCount--;
+                        completed[minIndex] = true;
+                        enumerator.Dispose();
+                        if (startIndex == minIndex) startIndex++;
+                        if (endIndex == minIndex + 1) endIndex--;
+                    }
+                }
+            }
+            finally
+            {
+                if (activeCount > 0)
+                {
+                    for (int i = startIndex; i < endIndex; i++)
+                    {
+                        if (!completed[i]) enumerators[i].Dispose();
+                    }
                 }
             }
         }
