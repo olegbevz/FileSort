@@ -1,6 +1,7 @@
 ﻿using FileSort.Core.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -22,7 +23,7 @@ namespace FileSort.Core
             ChunkStack<T> tempChunkStack,
             int channelCapacity = 10,
             int concurrency = 10,
-            int chunkSize = 3000000)
+            int chunkSize = 1000000)
             : base(chunkStack, tempChunkStack)
         {
             _chunkSize = chunkSize;
@@ -34,7 +35,8 @@ namespace FileSort.Core
             var readChannel = CreateReadChannel();
             var sortChannel = CreateSortChannel();
 
-            var readTask = Task.Run(() => ReadChunks(source, readChannel.Writer).ConfigureAwait(false));
+
+            var readTask = Task.Run(async () => await ReadChunks(source, readChannel.Writer));
             var sortTasks = new Task[_concurrency];
             for (int i = 0; i < _concurrency; i++)
             {
@@ -75,8 +77,12 @@ namespace FileSort.Core
             {
                 _logger.Info("Starting reading phase...");
 
+                var stopwatch = Stopwatch.StartNew();
+                var chunkStopwatch = Stopwatch.StartNew();
+
                 var currentChunk = new List<T>();
                 long currentChunkSize = 0;
+                long currentChunkNumber = 0;
 
                 foreach (var value in source)
                 {
@@ -87,11 +93,12 @@ namespace FileSort.Core
                     }
                     else
                     {
-                        _logger.Debug($"Chunk readen from input source");
+                        _logger.Debug($"Chunk {currentChunkNumber} with {currentChunk.Count} lines was readen in {chunkStopwatch.Elapsed}.");
+                        chunkStopwatch.Restart();
                         await channelWriter.WriteAsync(currentChunk).ConfigureAwait(false);
-                        _logger.Debug($"Chunk pushed to channel");
                         currentChunk = new List<T>();
                         currentChunkSize = 0;
+                        currentChunkNumber++;
                     }
                 }
 
@@ -100,7 +107,8 @@ namespace FileSort.Core
                 _logger.Debug($"Chunk pushed to channel");
 
                 channelWriter.Complete();
-                _logger.Info("Reading phase is completed.");
+                stopwatch.Stop();
+                _logger.Info($"Reading phase is completed in {stopwatch.Elapsed}.");
             }
             catch (Exception ex)
             {
@@ -118,13 +126,17 @@ namespace FileSort.Core
 
                 _logger.Info($"{index}. Started sorting phase...");
 
+                var stopwatch = Stopwatch.StartNew();
+
                 while (await channelReader.WaitToReadAsync().ConfigureAwait(false))
                 {
                     if (channelReader.TryRead(out var chunk))
                     {
-                        _logger.Debug($"{index}. Chunk sorting");
+                        
+                        _logger.Debug($"{index}. Started sorting chunk ...");
                         chunk.Sort();
-                        _logger.Debug($"{index}. Chunk sorted");
+                        _logger.Debug($"{index}. Chunk was sorted in {stopwatch.Elapsed}");
+                        stopwatch.Restart();
                         await channelWriter.WriteAsync(chunk).ConfigureAwait(false);
                     }
                 }
@@ -143,11 +155,15 @@ namespace FileSort.Core
         {
             try
             {
+                var stopwatch = Stopwatch.StartNew();
                 while (await channelReader.WaitToReadAsync().ConfigureAwait(false))
                 {
                     if (channelReader.TryRead(out var chunk))
                     {
-                        _chunkStack.Push(chunk);
+                        _logger.Debug($"Starting to merge chunk with {chunk.Count}");
+                        PushToStackRecursively(chunk);
+                        _logger.Debug($"Chunk was merged in {stopwatch.Elapsed}");
+                        stopwatch.Restart();
                     }
                 }
 
