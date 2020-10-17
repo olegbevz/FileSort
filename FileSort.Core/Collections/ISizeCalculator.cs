@@ -1,4 +1,4 @@
-﻿namespace FileSort
+﻿namespace FileSort.Core
 {
     public interface ISizeCalculator<T>
     {

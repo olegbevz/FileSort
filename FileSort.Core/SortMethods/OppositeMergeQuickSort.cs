@@ -1,13 +1,12 @@
-﻿using log4net;
+﻿using FileSort.Core.Logging;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 
-namespace FileSort
+namespace FileSort.Core
 {
     public class OppositeMergeQuickSort<T> : MergeSortBase<T>, ISortMethod<T> where T : IComparable
     {
-        private static readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog _logger = LogProvider.GetCurrentClassLogger();
 
         private readonly int _chunkSize;
 

@@ -1,7 +1,6 @@
-﻿using FileSort.Core;
-using System;
+﻿using System;
 
-namespace FileSort
+namespace FileSort.Core
 {
     public class FileLineSizeCalculator : ISizeCalculator<FileLine>
     {

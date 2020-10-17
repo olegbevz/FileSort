@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace FileSort
+namespace FileSort.Core
 {
     public abstract class MergeSortBase<T> where T : IComparable
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace FileSort
+namespace FileSort.Core
 {
     public class MergeSortJoin<T> : ISortJoin<T> where T : IComparable
     {

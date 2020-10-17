@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 
-namespace FileSort
+namespace FileSort.Core
 {
     public interface IChunkReaderWriter<T>
     {

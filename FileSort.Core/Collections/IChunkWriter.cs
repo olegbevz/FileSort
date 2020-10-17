@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FileSort
+namespace FileSort.Core
 {
     public interface IChunkWriter<T> : IDisposable
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace FileSort
+namespace FileSort.Core
 {
     public class RangeStream : Stream
     {
@@ -10,9 +10,9 @@ namespace FileSort
         private readonly long _length;
         private readonly long _endPosition;
 
-        public RangeStream(Stream underlyingStream, long startPosititon, long endPosition)
+        public RangeStream(Stream stream, long startPosititon, long endPosition)
         {
-            _underlyingStream = underlyingStream;
+            _underlyingStream = stream;
             _startPosititon = startPosititon;
             _length = endPosition - startPosititon;
             _endPosition = endPosition;

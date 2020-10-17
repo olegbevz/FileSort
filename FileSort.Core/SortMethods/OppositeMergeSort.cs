@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace FileSort
+namespace FileSort.Core
 {
     public class OppositeMergeSort<T> : MergeSortBase<T>, ISortMethod<T> where T : IComparable
     {

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace FileSort
+namespace FileSort.Core
 {
     public interface IChunkStorage<T>
     {

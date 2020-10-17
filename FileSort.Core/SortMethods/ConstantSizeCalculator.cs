@@ -1,4 +1,4 @@
-﻿namespace FileSort
+﻿namespace FileSort.Core
 {
     public class ConstantSizeCalculator<T> : ISizeCalculator<T>
     {

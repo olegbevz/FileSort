@@ -85,7 +85,7 @@ namespace FileSort.Core
 
                 if (currentLine == WritePositionFrequency)
                 {
-                    _logger.Info($"Currently {_stream.Position} bytes readen");
+                    _logger.Debug($"Currently {_stream.Position} bytes readen");
                     currentLine = 0;
                 }
 

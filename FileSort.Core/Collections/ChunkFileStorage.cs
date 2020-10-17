@@ -1,15 +1,13 @@
-﻿using FileSort.Core;
-using log4net;
+﻿using FileSort.Core.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 
-namespace FileSort
+namespace FileSort.Core
 {
     public class ChunkFileStorage<T> : IChunkStorage<T>
     {
-        private static readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog _logger = LogProvider.GetCurrentClassLogger();
 
         private readonly string _fileName;
         private readonly int _fileBuffer;

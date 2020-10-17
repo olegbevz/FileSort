@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace FileSort
+namespace FileSort.Core
 {
     public class FileLineReaderWriter : IChunkReaderWriter<FileLine>
     {
