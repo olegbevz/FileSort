@@ -25,23 +25,10 @@ namespace FileSort
         public void Sort(string inputFileName, string outputFileName)
         {
             using (var fileStream = FileWithBuffer.OpenRead(inputFileName, _fileBufferSize))
+            using (var targetChunkStorage = CreateTargetFileStorage(outputFileName))
+            using (var tempChunkStorage = CreateTempFileStorage(outputFileName))
             {
                 var fileSize = fileStream.Length;
-                var readerWriter = new FileLineReaderWriter(_streamBuffer);
-
-                var targetChunkStorage = new ChunkFileStorage<FileLine>(
-                    outputFileName, 
-                    _fileBufferSize,
-                    readerWriter);
-
-                var tempFileName = Path.Combine(
-                    Path.GetDirectoryName(outputFileName),
-                    $"{Path.GetFileNameWithoutExtension(outputFileName)}_temp{Path.GetExtension(outputFileName)}");
-
-                var tempChunkStorage = new ChunkFileStorage<FileLine>(
-                    tempFileName,
-                    _fileBufferSize,
-                    readerWriter);
 
                 var chunkStack = new ChunkStack<FileLine>(
                     _memoryBufferSize,
@@ -53,13 +40,36 @@ namespace FileSort
                     new FileLineSizeCalculator(),
                     tempChunkStorage);
 
-                var sortMethod = _sortMethodFactory.CreateSortMethod<FileLine>(chunkStack, tempChunkStack);
+                var sortMethod = _sortMethodFactory.CreateSortMethod(chunkStack, tempChunkStack);
 
                 var inputFileLines = new FileLineReader(fileStream, _streamBuffer);
                 var sortedCollection = sortMethod.Sort(inputFileLines);
                 if (sortedCollection is IChunkReference<FileLine> chunkReference)
                     chunkReference.Flush(targetChunkStorage);
             }
+        }
+
+        private ChunkFileStorage<FileLine> CreateTempFileStorage(
+            string outputFileName)
+        {
+            var tempFileName = Path.Combine(
+                Path.GetDirectoryName(outputFileName),
+                $"{Path.GetFileNameWithoutExtension(outputFileName)}_temp{Path.GetExtension(outputFileName)}");
+
+            return new ChunkFileStorage<FileLine>(
+                tempFileName,
+                _fileBufferSize,
+                new FileLineReaderWriter(_streamBuffer),
+                true);
+        }
+
+        private ChunkFileStorage<FileLine> CreateTargetFileStorage(            
+            string outputFileName)
+        {
+            return new ChunkFileStorage<FileLine>(
+                outputFileName,
+                _fileBufferSize,
+                new FileLineReaderWriter(_streamBuffer));
         }
     }
 }

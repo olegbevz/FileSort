@@ -5,21 +5,26 @@ using System.IO;
 
 namespace FileSort.Core
 {
-    public class ChunkFileStorage<T> : IChunkStorage<T>
+    public class ChunkFileStorage<T> : IChunkStorage<T>, IDisposable
     {
         private static readonly ILog _logger = LogProvider.GetCurrentClassLogger();
 
         private readonly string _fileName;
         private readonly int _fileBuffer;
         private readonly IChunkReaderWriter<T> _readerWriter;
-
+        private readonly bool _removeOnDispose;
         private long _currentPosition = 0;
 
-        public ChunkFileStorage(string fileName, int fileBuffer, IChunkReaderWriter<T> readerWriter)
+        public ChunkFileStorage(
+            string fileName, 
+            int fileBuffer, 
+            IChunkReaderWriter<T> readerWriter, 
+            bool removeOnDispose = false)
         {
             _fileName = fileName;
             _fileBuffer = fileBuffer;
             _readerWriter = readerWriter;
+            _removeOnDispose = removeOnDispose;
         }
 
         public IEnumerable<T> OpenForRead(long size)
@@ -55,6 +60,12 @@ namespace FileSort.Core
                 File.Delete(chunkFileStorage._fileName);
                 File.Move(_fileName, chunkFileStorage._fileName);
             }
+        }
+
+        public void Dispose()
+        {
+            if (_removeOnDispose)
+                File.Delete(_fileName);
         }
 
         private class ChunkFileStorageWriter : IChunkStorageWriter<T>
