@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Reflection;
 using CommandLine;
 using FileSort.Core;
@@ -36,27 +35,15 @@ namespace FileGenerate
 
                 var fileSize = MemorySize.Parse(options.FileSize);
                 var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer);
-                var memoryBufferSize = Math.Min((int)MemorySize.Parse(options.MemoryBuffer), fileSize);
+                var memoryBufferSize = Math.Min(MemorySize.Parse(options.MemoryBuffer), fileSize);
 
-                using (var fileStream = FileWithBuffer.OpenWrite(options.FileName, fileBufferSize))
-                {
-                    if (options.Duplicates > 0)
-                    {
-                        WriteRandomStringsWithDuplicates(
-                            fileStream,
-                            fileSize,
-                            memoryBufferSize,
-                            options.Duplicates,
-                            options.StringFactory);
-                    }
-                    else
-                    {
-                        WriteRandomStringsWithoutDuplicates(
-                            fileStream,
-                            fileSize,
-                            options.StringFactory);
-                    }
-                }
+                var fileGenerate = new FileGenerate(
+                    fileBufferSize, 
+                    memoryBufferSize, 
+                    options.Duplicates, 
+                    CreateStringFactory(options.StringFactory));
+
+                fileGenerate.Generate(options.FileName, fileSize);
 
                 _logger.Info($"File '{options.FileName}' has been successfully generated.");
             }
@@ -64,80 +51,6 @@ namespace FileGenerate
             {
                 _logger.Error($"Failed to generate file '{options.FileName}'.", ex);
             }
-        }
-
-        private static void WriteRandomStringsWithoutDuplicates(
-            FileStream fileStream,
-            long fileSize,
-            StringFactory stringFactory)
-        {
-            using (var streamWriter = new StreamWriter(fileStream))
-            {
-                WriteRandomStrings(streamWriter, fileSize, stringFactory);
-            }
-        }
-
-        private static void WriteRandomStringsWithDuplicates(
-            FileStream fileStream,
-            long fileSize,
-            long memoryBufferSize,
-            int duplicatesFrequency,
-            StringFactory stringFactory)
-        {
-            var duplicateCounter = 0;
-
-            var buffer = new byte[memoryBufferSize];
-            using (var bufferStream = new MemoryStream(buffer))
-            {
-                using (var streamWriter = new StreamWriter(bufferStream))
-                {
-                    while (fileStream.Position + memoryBufferSize < fileSize)
-                    {
-                        var writeDuplicate = duplicateCounter > 0;
-
-                        if (!writeDuplicate)
-                        {
-                            WriteRandomStrings(streamWriter, memoryBufferSize, stringFactory);
-                        }
-
-                        fileStream.Write(buffer, 0, buffer.Length);
-
-                        if (!writeDuplicate)
-                        {
-                            bufferStream.Seek(0, SeekOrigin.Begin);
-                        }
-
-                        duplicateCounter++;
-                        if (duplicateCounter >= duplicatesFrequency)
-                            duplicateCounter = 0;
-                    }
-                }
-            }
-
-            if (fileStream.Position < fileSize)
-            {
-                var remainedSize = fileSize - fileStream.Position;
-
-                using (var streamWriter = new StreamWriter(fileStream))
-                {
-                    WriteRandomStrings(streamWriter, remainedSize, stringFactory);
-                }
-            }
-        }
-
-        private static void WriteRandomStrings(
-            StreamWriter streamWriter, 
-            long targetSize, 
-            StringFactory stringFactory)
-        {
-            var randomStringSource = new RandomStringEnumerable(
-                targetSize,
-                streamWriter.Encoding,
-                streamWriter.NewLine,
-                CreateStringFactory(stringFactory));
-
-            foreach (var line in randomStringSource)
-                streamWriter.WriteLine(line);
         }
 
         private static IRandomStringFactory CreateStringFactory(StringFactory stringFactory)

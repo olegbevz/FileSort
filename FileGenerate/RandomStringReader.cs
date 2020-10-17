@@ -5,14 +5,14 @@ using System.Text;
 
 namespace FileGenerate
 {
-    public class RandomStringEnumerable : IEnumerable<string>
+    public class RandomStringReader : IEnumerable<string>
     {
         private readonly long _targetSize;
         private readonly Encoding _targetEncoding;
         private readonly string _separator;
         private readonly IRandomStringFactory _stringFactory;
 
-        public RandomStringEnumerable(
+        public RandomStringReader(
             long targetSize, 
             Encoding targetEncoding, 
             string separator, 

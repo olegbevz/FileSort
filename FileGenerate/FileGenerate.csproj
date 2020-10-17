@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FileGenerate.cs" />
     <Compile Include="StringFactories\AutoFixtureStringFactory.cs" />
     <Compile Include="StringFactories\BogusStringFactory.cs" />
     <Compile Include="StringFactories\ConstantStringFactory.cs" />
@@ -68,7 +69,7 @@
     <Compile Include="IRandomStringFactory.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RandomStringEnumerable.cs" />
+    <Compile Include="RandomStringReader.cs" />
     <Compile Include="StringFactories\RandomStringFactory.cs" />
     <Compile Include="StringFactories\RandomStringFactoryBase.cs" />
     <Compile Include="StringFactories\SequenceStringFactory.cs" />
