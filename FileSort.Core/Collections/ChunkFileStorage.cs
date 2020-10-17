@@ -22,27 +22,7 @@ namespace FileSort.Core
             _readerWriter = readerWriter;
         }
 
-        public long Push(IEnumerable<T> source)
-        {
-            using (var fileStream = FileWithBuffer.OpenAppend(_fileName, _fileBuffer))
-            {
-                _logger.Debug($"File '{_fileName}' was opened for write at position {_currentPosition}.");
-
-                fileStream.Seek(_currentPosition, SeekOrigin.Begin);
-                using (var streamWriter = new StreamWriter(fileStream))
-                {
-                    _readerWriter.WriteToStream(streamWriter, source);
-                    streamWriter.Flush();
-                    var size = fileStream.Position - _currentPosition;
-                    _currentPosition = fileStream.Position;
-
-                    _logger.Debug($"Writing to file '{_fileName}' completed at position {_currentPosition}.");
-                    return size;
-                }
-            }
-        }
-
-        public IEnumerable<T> Pop(long size)
+        public IEnumerable<T> OpenForRead(long size)
         {
             if (size > _currentPosition)
                 throw new IndexOutOfRangeException();
@@ -57,7 +37,7 @@ namespace FileSort.Core
             return _readerWriter.ReadFromStream(rangeStream);
         }
 
-        public IChunkStorageWriter<T> GetWriter()
+        public IChunkStorageWriter<T> OpenForWrite()
         {
             _logger.Debug($"File '{_fileName}' was opened for write at position {_currentPosition}.");
             var fileStream = FileWithBuffer.OpenAppend(_fileName, _fileBuffer);
@@ -94,6 +74,10 @@ namespace FileSort.Core
                 _chunkWriter = chunkWriter;
                 _chunkFileStorage = chunkFileStorage;
             }
+            public void Write(IEnumerable<T> values)
+            {
+                _chunkWriter.WriteToStream(_streamWriter, values);
+            }
 
             public void Write(T value)
             {
@@ -104,14 +88,14 @@ namespace FileSort.Core
             {
                 _streamWriter.Flush();
                 _endPosition = _fileStream.Position;
-
                 _chunkFileStorage._currentPosition = _fileStream.Position;
-
-                _streamWriter.Dispose();
-
                 _logger.Debug($"Writing to file '{_fileStream.Name}' completed at position {_endPosition}.");
-
                 return _endPosition - _startPosition;
+            }
+
+            public void Dispose()
+            {
+                _streamWriter.Dispose();
             }
         }
     }

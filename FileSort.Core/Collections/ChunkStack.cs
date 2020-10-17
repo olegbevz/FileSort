@@ -191,8 +191,12 @@ namespace FileSort.Core
 
         private FileChunkReference CreateFileChunkReference(IEnumerable<T> chunk, int count)
         {
-            var size = _chunkStorage.Push(chunk);
-            return new FileChunkReference(size, count, _chunkStorage);
+            using (var writer = _chunkStorage.OpenForWrite())
+            {
+                writer.Write(chunk);
+                var size = writer.Complete();
+                return new FileChunkReference(size, count, _chunkStorage);
+            }
         }
 
         private class MemoryChunkReference : IChunkReference<T>, IChunkWriter<T>
@@ -233,7 +237,11 @@ namespace FileSort.Core
 
             public void Flush(IChunkStorage<T> chunkStorage)
             {
-                chunkStorage.Push(_array);
+                using (var writer = chunkStorage.OpenForWrite())
+                {
+                    writer.Write(_array);
+                    writer.Complete();
+                }
             }
 
             public IEnumerator<T> GetEnumerator()
@@ -270,14 +278,14 @@ namespace FileSort.Core
                 Count = count;
 
                 if (chunkWriter)
-                    _chunkStorageWriter = chunkStorage.GetWriter();
+                    _chunkStorageWriter = chunkStorage.OpenForWrite();
             }
 
             public long MemorySize { get { return 0; } }
             public int Count { get; private set; }
             public IEnumerable<T> GetValue()
             {
-                return _chunkStorage.Pop(TotalSize);
+                return _chunkStorage.OpenForRead(TotalSize);
             }
 
             public long TotalSize { get; private set; }
@@ -322,6 +330,7 @@ namespace FileSort.Core
                 if (_chunkStorageWriter == null)
                     return;
                 TotalSize = _chunkStorageWriter.Complete();
+                _chunkStorageWriter.Dispose();
             }
         }
     }

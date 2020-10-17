@@ -125,7 +125,7 @@ namespace FileSort.Core
                 {
                     for (int i = startIndex; i < endIndex; i++)
                     {
-                        if (!completed[i]) enumerators[i].Dispose();
+                        if (!completed[i]) enumerators[i]?.Dispose();
                     }
                 }
             }
