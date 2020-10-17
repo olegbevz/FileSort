@@ -128,9 +128,15 @@ namespace FileSort.Core
             public IChunkReference<T> ExecuteFinalMerge()
             {
                 var currentChunkStack = _chunkStack;
-                if (_tempChunkStack.Count > 0)
+                
+                if (_tempChunkStack.Count > 0 && _chunkStack.TotalSize > _tempChunkStack.TotalSize)
                 {
-                    Merge(currentChunkStack.ToArray(), _tempChunkStack);
+                    Merge(_tempChunkStack.ToArray(), currentChunkStack);                    
+                }
+
+                if (_chunkStack.TotalSize < _tempChunkStack.TotalSize && _chunkStack.Count > 0)
+                {
+                    Merge(_chunkStack.ToArray(), _tempChunkStack);
                     currentChunkStack = _tempChunkStack;
                 }
 

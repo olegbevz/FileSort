@@ -35,6 +35,23 @@ namespace FileSort.Core
             }
         }
 
+        public long MemorySize
+        {
+           get
+           {
+                return _currentSize;
+           }
+        }
+
+        public long TotalSize
+        {
+            get
+            {
+                // TODO: store total size field instread of calculation
+                return _stack.ToArray().Sum(x => x.TotalSize);
+            }
+        }
+
         public int? LastChunkLength
         {
             get
