@@ -94,7 +94,10 @@ namespace FileGenerate
                 if (spaceLeft > 0 && spaceLeft <= _minStringSize)
                 {
                     var charsLeft = (int)(spaceLeft / _saltSize);
-                    current += new string(Salt, charsLeft);
+                    var stringBuilder = new StringBuilder(current);
+                    for (int i = 0; i < charsLeft; i++)
+                        stringBuilder.Append(Salt);
+                    current = stringBuilder.ToString();
                     stringSize = _targetEncoding.GetByteCount(current);
                 }
                 else if (nextSize >= _targetSize)

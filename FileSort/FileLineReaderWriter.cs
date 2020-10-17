@@ -16,7 +16,7 @@ namespace FileSort
         public void WriteToStream(StreamWriter streamWriter, IEnumerable<FileLine> source)
         {
             foreach (var line in source)
-                streamWriter.WriteLine(line.ToString());
+                line.WriteTo(streamWriter);
         }
     }
 }

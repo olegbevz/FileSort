@@ -82,7 +82,12 @@ namespace FileSort.IntegrationTests
 
             var checkProcess = ProcessRunner.RunProcess("FileCheck.exe", $"{outputFileName}");
             Console.WriteLine($"File '{outputFileName}' was checked in {checkProcess.TotalProcessorTime}.");
-            ProcessAssert.HasZeroExitCode(checkProcess, $"File '{inputFileName}' was not properly sorted or check failed.");         
+            ProcessAssert.HasZeroExitCode(checkProcess, $"File '{inputFileName}' was not properly sorted or check failed.");
+
+            //File.Delete(inputFileName);
+            //Console.WriteLine($"File '{inputFileName}' was deleted from target directory");
+            File.Delete(outputFileName);
+            Console.WriteLine($"File '{outputFileName}' was deleted from target directory");
         }
     }
 }

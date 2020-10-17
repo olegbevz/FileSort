@@ -62,9 +62,10 @@ namespace FileSort
         public IChunkStorageWriter<T> GetWriter()
         {
             _logger.Debug($"File '{_fileName}' was opened for write at position {_currentPosition}.");
-
+            var fileStream = FileWithBuffer.OpenAppend(_fileName, _fileBuffer);
+            fileStream.Seek(_currentPosition, SeekOrigin.Begin);
             return new ChunkFileStorageWriter(
-                FileWithBuffer.OpenAppend(_fileName, _fileBuffer),
+                fileStream,
                 _readerWriter,
                 this);
         }
