@@ -1,4 +1,5 @@
 ﻿using CommandLine;
+using FileSort.Core;
 
 namespace FileSort
 {
@@ -20,5 +21,7 @@ namespace FileSort
         public int ChannelCapacity { get; set; }
         [Option("concurrency", Required = false, Default = 10, HelpText = "Number of concurrent sorting operations in concurrent sorting methods")]
         public int Concurrency { get; set; }
+        [Option('s', "sort-method", Required = false, Default = SortMethod.ConcurrentMergeQuickSort, HelpText = "Sorting algorithm")]
+        public SortMethod SortMethod { get; set; }
     }
 }

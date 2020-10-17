@@ -38,6 +38,7 @@ namespace FileSort
                 var memoryBufferSize = MemorySize.Parse(options.MemoryBuffer);
 
                 var sortMethodFactory = new SortMethodFactory(
+                    options.SortMethod,
                     options.ChannelCapacity,
                     options.Concurrency,
                     options.QuickSortSize);
