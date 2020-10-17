@@ -34,31 +34,13 @@ namespace FileCheck
             {
                 var fileBufferSize = (int)MemorySize.Parse(options.FileBuffer);
                 var streamBufferSize = (int)MemorySize.Parse(options.StreamBuffer);
-                bool compareFileLines = !options.OnlyCheckFormat;
 
-                using (var fileStream = FileWithBuffer.OpenRead(options.FileName, fileBufferSize))
-                {
-                    FileLine previousLine = FileLine.None;
-                    bool firstLineReaden = false;
-                    foreach (var fileLine in new FileLineReader(fileStream, streamBufferSize))
-                    {
-                        if (compareFileLines && firstLineReaden)
-                        {
-                            if (previousLine.CompareTo(fileLine) > 0)
-                            {
-                                _logger.Warn($"File '{options.FileName}' is not properly sorted.");
-                                _logger.Warn($"Line '{fileLine}' should be before line '{previousLine}'.");
-                                return 1;
-                            }
-                        }
+                var fileCheck = new FileCheck(fileBufferSize, streamBufferSize, options.OnlyCheckFormat);
 
-                        previousLine = fileLine;
-                        firstLineReaden = true;
-                    }
-                }
+                var checkResult = fileCheck.Check(options.FileName);
 
                 _logger.Info($"File '{options.FileName}' has been successfully checked for lines order.");
-                return 0;
+                return checkResult ? 0 : 1;
             }
             catch (Exception ex)
             {
