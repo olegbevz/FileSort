@@ -90,7 +90,10 @@ namespace FileSort.Core
         {
             if (_currentSize + chunkSize > _bufferSize && !_stack.All(x => x is FileChunkReference))
             {
-                ResizeStack(chunkSize);
+                while (_currentSize + chunkSize > _bufferSize)
+                {
+                    ShrinkStack();
+                }
             }
         }
 
@@ -155,33 +158,25 @@ namespace FileSort.Core
             return _stack.Select(chunk => chunk.Count).ToArray();
         }
 
-        private void ResizeStack(long reqiredSpaceToAdd)
+        private void ShrinkStack()
         {
             if (_stack.Count == 0)
                 return;
 
-            var sizeCounter = reqiredSpaceToAdd;
-            var array = new IChunkReference<T>[_stack.Count];
-            var arrayIndex = _stack.Count - 1;
+            var sourceArray = _stack.ToArray();
 
-            foreach (var chunk in _stack)
+            for (int i = sourceArray.Length - 1; i >= 0; i --)
             {
-                sizeCounter += chunk.MemorySize;
-
-                if (sizeCounter > _bufferSize && !(chunk is FileChunkReference))
+                var chunk = sourceArray[i];
+                if (chunk is MemoryChunkReference)
                 {
-                    array[arrayIndex] = CreateFileChunkReference(chunk.GetValue().ToArray());
+                    sourceArray[i] = CreateFileChunkReference(chunk.GetValue().ToArray());
                     _currentSize -= chunk.MemorySize;
+                    break;
                 }
-                else
-                {
-                    array[arrayIndex] = chunk;
-                }
-
-                arrayIndex--;
             }
 
-            _stack = new Stack<IChunkReference<T>>(array);
+            _stack = new Stack<IChunkReference<T>>(sourceArray.Reverse());
         }
 
         private FileChunkReference CreateFileChunkReference(T[] chunk)
@@ -320,8 +315,7 @@ namespace FileSort.Core
             {
                 if (_chunkStorageWriter == null)
                     throw new Exception("Chunk writer was not initialized or already completed");
-                TotalSize = _chunkStorageWriter.Complete();
-                _chunkStorageWriter = null;
+                TotalSize = _chunkStorageWriter.Complete();                
                 return this;
             }
 
@@ -329,8 +323,8 @@ namespace FileSort.Core
             {
                 if (_chunkStorageWriter == null)
                     return;
-                TotalSize = _chunkStorageWriter.Complete();
                 _chunkStorageWriter.Dispose();
+                _chunkStorageWriter = null;
             }
         }
     }

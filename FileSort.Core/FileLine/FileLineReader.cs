@@ -73,22 +73,20 @@ namespace FileSort.Core
 
             public bool MoveNext()
             {
+                _currentLine++;
+
                 if (!FileLine.TryParse(_streamReader, out _current))
                 {
                     if (_streamReader.EndOfStream)
                         return false;
 
-                    throw new ArgumentException($"Failed to parse stream line '{_streamReader.ReadLine()}'.");
+                    throw new ArgumentException($"Failed to parse line {_currentLine}: '{_streamReader.ReadLine()}'.");
                 }
 
-                currentLine++;
-
-                if (currentLine == WritePositionFrequency)
+                if (_currentLine % WritePositionFrequency == 0)
                 {
                     _logger.Debug($"Currently {_stream.Position} bytes readen");
-                    currentLine = 0;
                 }
-
 
                 return true;
             }
