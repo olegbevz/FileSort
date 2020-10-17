@@ -37,7 +37,7 @@ namespace FileSort.Core
             private readonly StreamReader _streamReader;
             private readonly Stream _stream;
             private FileLine _current;
-            private long currentLine;
+            private long _currentLine;
 
             public FileLineEnumerator(Stream stream, int streamBuffer)
             {
