@@ -47,10 +47,10 @@ namespace FileSort.Core
             {
                 sortTasks[i] = Task.Run(async () => await SortChunks(readChannel.Reader, sortChannel.Writer));
             }
-            var mergeTasks = new Task<IChunkReference<T>[]>[_stackConcurrency];
+            var mergeTasks = new Task<IEnumerable<IChunkReference<T>>>[_stackConcurrency];
             for (int i = 0; i < _stackConcurrency; i++)
             {
-                mergeTasks[i] = Task.Run(async () => await PushChunksToStackAndMerge(sortChannel.Reader).ConfigureAwait(false));
+                mergeTasks[i] = Task.Run(async () => await PushChunksToStackAndMerge(sortChannel.Reader));
             }
 
             readTask.Wait();
@@ -61,7 +61,9 @@ namespace FileSort.Core
             _logger.Info("Starting final merge");
             var stopwatch = Stopwatch.StartNew();
 
-            var chunks = mergeTasks.SelectMany(x => x.Result)?.ToArray();           
+            var chunks = mergeTasks
+                .Where(x => x.Result != null)
+                .SelectMany(x => x.Result).ToArray();           
             var chunk = _appender.Merge(chunks, _chunkStack);
 
             _logger.Info($"Final merge completed in {stopwatch.Elapsed}");
@@ -121,9 +123,8 @@ namespace FileSort.Core
                     }
                 }
 
-                _logger.Debug($"Chunk readen from input source");
+                _logger.Debug($"Chunk {currentChunkNumber} with {currentChunk.Count} lines was readen in {chunkStopwatch.Elapsed}.");
                 await channelWriter.WriteAsync(currentChunk).ConfigureAwait(false);
-                _logger.Debug($"Chunk pushed to channel");
 
                 channelWriter.Complete();
                 stopwatch.Stop();
@@ -170,7 +171,7 @@ namespace FileSort.Core
             }
         }
 
-        private async Task<IChunkReference<T>[]> PushChunksToStackAndMerge(ChannelReader<List<T>> channelReader)
+        private async Task<IEnumerable<IChunkReference<T>>> PushChunksToStackAndMerge(ChannelReader<List<T>> channelReader)
         {
             try
             {
@@ -183,18 +184,14 @@ namespace FileSort.Core
                 {
                     if (channelReader.TryRead(out var chunk))
                     {
-                        _logger.Debug($"Starting to merge chunk with {chunk.Count}");
+                        _logger.Debug($"Starting to merge chunk with {chunk.Count} lines");
                         appender.PushToStackRecursively(chunk);
                         _logger.Debug($"Chunk was merged in {stopwatch.Elapsed}");
                         stopwatch.Restart();
                     }
                 }
 
-                if (chunkStack.Count == 0)
-                    return null;
-
-                return chunkStack.ToArray().Concat(tempChunStack.ToArray()).ToArray();
-                //return _appender.ExecuteFinalMerge();
+                return chunkStack.ToArray().Concat(tempChunStack.ToArray());
             }
             catch (Exception ex)
             {
