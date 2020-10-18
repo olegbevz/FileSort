@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -14,21 +15,26 @@ namespace FileSort.Core
 
         private readonly int _chunkSize;
         private readonly int _concurrency;
+        private readonly int _stackConcurrency;
+        private readonly IChunkStackFactory<T> _chunkStackFactory;
         private readonly int _channelCapacity; 
 
         private int _concurrencyCounter;
 
         public ConcurrentOppositeMergeQuickSort(
             ChunkStack<T> chunkStack,
-            ChunkStack<T> tempChunkStack,
+            IChunkStackFactory<T> chunkStackFactory,
             int channelCapacity = 10,
             int concurrency = 10,
-            int chunkSize = 1000000)
-            : base(chunkStack, tempChunkStack)
+            int chunkSize = 1000000,
+            int stackConcurrency = 2)
+            : base(chunkStack, null)
         {
             _chunkSize = chunkSize;
+            _chunkStackFactory = chunkStackFactory;
             _channelCapacity = channelCapacity;
             _concurrency = concurrency;
+            _stackConcurrency = stackConcurrency;
         }
         public IEnumerable<T> Sort(IEnumerable<T> source)
         {
@@ -42,13 +48,26 @@ namespace FileSort.Core
             {
                 sortTasks[i] = Task.Run(async () => await SortChunks(readChannel.Reader, sortChannel.Writer));
             }
-            var mergeTask = Task.Run(async () => await PushChunksToStackAndMerge(sortChannel.Reader).ConfigureAwait(false));
+            var mergeTasks = new Task<ChunkStack<T>>[_stackConcurrency];
+            //for (int i = 0; i < _concurrency; i++)
+            //{
+            //    mergeTasks[i] = Task.Run(async () => await PushChunksToStackAndMerge(sortChannel.Reader).ConfigureAwait(false));
+            //}
+            mergeTasks[0] = Task.Run(async () => await PushChunksToStackAndMerge(sortChannel.Reader).ConfigureAwait(false));
+            mergeTasks[1] = Task.Run(async () => await PushChunksToStackAndMerge(sortChannel.Reader).ConfigureAwait(false));
+            //mergeTasks[2] = Task.Run(async () => await PushChunksToStackAndMerge(sortChannel.Reader).ConfigureAwait(false));
 
             readTask.Wait();
             Task.WaitAll(sortTasks);
             sortChannel.Writer.Complete();
-            mergeTask.Wait();
-            return mergeTask.Result;
+            Task.WaitAll(mergeTasks);
+
+            //var firstStack = mergeTasks[0].Result;
+            //var secondStack = mergeTasks[1].Result;
+
+            //return _appender.Merge(firstStack.ToArray().Concat(secondStack.ToArray()).ToArray(), _chunkStack);
+
+            return ChunkStack<T>.Empty;
         }
 
         private Channel<List<T>> CreateSortChannel()
@@ -151,28 +170,31 @@ namespace FileSort.Core
             }
         }
 
-        private async Task<IChunkReference<T>> PushChunksToStackAndMerge(ChannelReader<List<T>> channelReader)
+        private async Task<ChunkStack<T>> PushChunksToStackAndMerge(ChannelReader<List<T>> channelReader)
         {
             try
             {
                 var stopwatch = Stopwatch.StartNew();
+                var chunkStack = _chunkStackFactory.CreateChunkStack();
                 while (await channelReader.WaitToReadAsync().ConfigureAwait(false))
                 {
                     if (channelReader.TryRead(out var chunk))
                     {
                         _logger.Debug($"Starting to merge chunk with {chunk.Count}");
-                        PushToStackRecursively(chunk);
+                        chunkStack.Push(chunk);
+                        //PushToStackRecursively(chunk);
                         _logger.Debug($"Chunk was merged in {stopwatch.Elapsed}");
                         stopwatch.Restart();
                     }
                 }
 
-                if (_chunkStack.Count == 0)
+                if (chunkStack.Count == 0)
                     return null;
 
                 _logger.Info("Starting final merge");
 
-                return _appender.ExecuteFinalMerge();
+                //return _appender.ExecuteFinalMerge();
+                return chunkStack;
             }
             catch (Exception ex)
             {

@@ -13,7 +13,7 @@ namespace FileSort
         public string FileBuffer { get; set; }
         [Option("stream-buffer", Required = false, Default = "4KB", HelpText = "Size of StreamReader internal buffer")]
         public string StreamBuffer { get; set; }
-        [Option("memory-buffer", Required = false, Default = "500MB", HelpText = "Size of memory buffer")]
+        [Option("memory-buffer", Required = false, Default = "250MB", HelpText = "Size of memory buffer")]
         public string MemoryBuffer { get; set; }
         [Option("quick-sort-size", Required = false, HelpText = "Amount of records which will be quicksorted in memory before mergesort")]
         public int? QuickSortSize { get; set; }

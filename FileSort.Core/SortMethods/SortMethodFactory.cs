@@ -21,39 +21,39 @@ namespace FileSort.Core
             _quickSortSize = quickSortSize;
         }
 
-        public ISortMethod<T> CreateSortMethod<T>(ChunkStack<T> chunkStack, ChunkStack<T> tempChunkStack) where T : IComparable
+        public ISortMethod<T> CreateSortMethod<T>(ChunkStack<T> chunkStack, IChunkStackFactory<T> chunkStackFactory) where T : IComparable
         {
             switch (_sortMethod)
             {
                 case SortMethod.MergeSort:
                     {
-                        return new OppositeMergeSort<T>(chunkStack, tempChunkStack);
+                        return new OppositeMergeSort<T>(chunkStack, chunkStackFactory.CreateChunkStack());
                     }
                 case SortMethod.MergeQuickSort:
                     {
                         if (_quickSortSize != null)
                             return new OppositeMergeQuickSort<T>(
                                 chunkStack,
-                                tempChunkStack, 
+                                chunkStackFactory.CreateChunkStack(), 
                                 _quickSortSize.Value);
 
                         return new OppositeMergeQuickSort<T>(
                             chunkStack,
-                            tempChunkStack);
+                            chunkStackFactory.CreateChunkStack());
                     }
                 case SortMethod.ConcurrentMergeQuickSort:
                     {
                         if (_quickSortSize != null)
                             return new ConcurrentOppositeMergeQuickSort<T>(
                                 chunkStack,
-                                tempChunkStack,
+                                chunkStackFactory,
                                 _channelCapacity,
                                 _concurrency,
                                 _quickSortSize.Value);
 
                         return new ConcurrentOppositeMergeQuickSort<T>(
                             chunkStack,
-                            tempChunkStack,
+                            chunkStackFactory,
                             _channelCapacity,
                             _concurrency);
                     }
