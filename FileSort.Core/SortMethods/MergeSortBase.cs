@@ -20,31 +20,21 @@ namespace FileSort.Core
             _chunkStack = chunkStack;
         }
 
-        public void PushToStackRecursively(List<T> chunk)
+        public class ChunkStackAppender
         {
-            _appender.PushToStackRecursively(chunk);
-        }
-
-        public void PushToStackRecursively(T[] chunk)
-        {
-            _appender.PushToStackRecursively(chunk);
-        }
-
-        protected IEnumerable<T> ExecuteFinalMerge()
-        {
-            return _appender.ExecuteFinalMerge();
-        }
-
-        protected class ChunkStackAppender
-        {
-            protected readonly ISortJoin<T> _sortJoin = new MergeSortJoin<T>();
+            private readonly ISortJoin<T> _sortJoin = new MergeSortJoin<T>();
+            private readonly bool _onlyMemoryMerge;
 
             protected readonly ChunkStack<T> _chunkStack;
             protected readonly ChunkStack<T> _tempChunkStack;
-            public ChunkStackAppender(ChunkStack<T> chunkStack, ChunkStack<T> tempChunkStack)
+            public ChunkStackAppender(
+                ChunkStack<T> chunkStack,
+                ChunkStack<T> tempChunkStack,
+                bool onlyMemoryMerge = true)
             {
                 _chunkStack = chunkStack;
                 _tempChunkStack = tempChunkStack;
+                _onlyMemoryMerge = onlyMemoryMerge;
             }
 
             protected ChunkStack<T> GetOtherChunkStack(ChunkStack<T> chunkStack)
@@ -54,7 +44,8 @@ namespace FileSort.Core
 
             public void PushToStackRecursively(List<T> chunk)
             {
-                if (_chunkStack.LastChunkLength != chunk.Count)
+                if (_chunkStack.LastChunkLength != chunk.Count ||
+                    (_onlyMemoryMerge && _chunkStack.LastChunkMemorySize == 0))
                 {
                     _chunkStack.Push(chunk);
                 }
@@ -67,7 +58,8 @@ namespace FileSort.Core
 
             public void PushToStackRecursively(T[] chunk)
             {
-                if (_chunkStack.LastChunkLength != chunk.Length)
+                if (_chunkStack.LastChunkLength != chunk.Length ||
+                    (_onlyMemoryMerge && _chunkStack.LastChunkMemorySize == 0))
                 {
                     _chunkStack.Push(chunk);
                 }
@@ -82,12 +74,15 @@ namespace FileSort.Core
             {
                 var currentStack = _chunkStack;
                 var otherStack = GetOtherChunkStack(_chunkStack);
-                while (currentStack.LastChunkLength == chunkReference.Count)
+                while (currentStack.LastChunkLength == chunkReference.Count &&
+                    (!_onlyMemoryMerge || (currentStack.LastChunkMemorySize > 0 && chunkReference.MemorySize > 0)))
                 {
                     var previousChunkLength = otherStack.LastChunkLength;
+                    var previousChunkMemorySize = otherStack.LastChunkMemorySize;
                     chunkReference = Merge(chunkReference, currentStack.Pop(), otherStack);
 
-                    if (previousChunkLength == chunkReference.Count)
+                    if (previousChunkLength == chunkReference.Count && 
+                        (!_onlyMemoryMerge || (previousChunkMemorySize > 0 && chunkReference.MemorySize > 0)))
                     {
                         currentStack = otherStack;
                         otherStack = GetOtherChunkStack(currentStack);

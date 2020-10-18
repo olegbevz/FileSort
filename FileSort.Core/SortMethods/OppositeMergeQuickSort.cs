@@ -33,19 +33,19 @@ namespace FileSort.Core
                 else
                 {
                     currentChunk.Sort();
-                    PushToStackRecursively(currentChunk);
+                    _appender.PushToStackRecursively(currentChunk);
                     currentChunk.Clear();
                     currentChunkSize = 0;
                 }                
             }
 
             currentChunk.Sort();
-            PushToStackRecursively(currentChunk);
+            _appender.PushToStackRecursively(currentChunk);
 
             _logger.Info("Reading phase completed");
             _logger.Info("Starting final merge phase...");
 
-            return ExecuteFinalMerge();
+            return _appender.ExecuteFinalMerge();
         }        
     }
 }

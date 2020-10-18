@@ -63,6 +63,17 @@ namespace FileSort.Core
             }
         }
 
+        public long? LastChunkMemorySize
+        {
+            get
+            {
+                if (_stack.Count == 0)
+                    return null;
+
+                return _stack.Peek().MemorySize;
+            }
+        }
+
         public IChunkReference<T> Pop()
         {
             var chunk = _stack.Pop();
