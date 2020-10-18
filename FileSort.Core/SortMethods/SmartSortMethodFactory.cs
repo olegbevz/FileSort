@@ -2,6 +2,10 @@
 
 namespace FileSort.Core
 {
+    /// <summary>
+    /// SmartSortMethodFactory represents factory for a sort nethod logic
+    /// SortMethod here is determined based on a file size
+    /// </summary>
     public class SmartSortMethodFactory : SortMethodFactory
     {
         public SmartSortMethodFactory(long fileSize, int channelCapacity, int concurrency, int? quickSortSize)

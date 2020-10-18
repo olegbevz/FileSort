@@ -2,6 +2,10 @@
 
 namespace FileSort.Core
 {
+    /// <summary>
+    /// FileLineSizeCalculator represents memory size calculation logic for FileLine struct.
+    /// For performance persposes FileLine struct already contains its size
+    /// </summary>
     public class FileLineSizeCalculator : ISizeCalculator<FileLine>
     {
         public long GetBytesCount(FileLine value)

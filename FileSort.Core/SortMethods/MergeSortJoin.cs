@@ -3,6 +3,11 @@ using System.Collections.Generic;
 
 namespace FileSort.Core
 {
+    /// <summary>
+    /// ISortJoin reperesents logic of merging sorted sources of data.
+    /// Iput could be an array with pair of elements, two or many enumerations.
+    /// </summary>
+    /// <typeparam name="T">Type of data</typeparam>
     public class MergeSortJoin<T> : ISortJoin<T> where T : IComparable
     {
         public void Join(T[] chunkPair)

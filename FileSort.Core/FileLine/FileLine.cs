@@ -3,7 +3,12 @@ using System.IO;
 
 namespace FileSort.Core
 {
-    public struct FileLine : IComparable
+    /// <summary>
+    /// FileLine represents simple struct consisting of some number and text.
+    /// FileLine contains performance optimized methods for reading and writing to Stream
+    /// as well as optimized CompareTo method
+    /// </summary>
+    public readonly struct FileLine : IComparable
     {
         private static int _maxNumberLength = int.MaxValue.ToString().Length;
         private const int _maxNumberDivTen = int.MaxValue / 10;
@@ -87,9 +92,9 @@ namespace FileSort.Core
             Size = size;
         }
 
-        public int Number;
-        public string Name;
-        public long Size;
+        public readonly int Number;
+        public readonly string Name;
+        public readonly long Size;
 
         public int CompareTo(object obj)
         {

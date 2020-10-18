@@ -4,6 +4,9 @@ using log4net;
 
 namespace FileCheck
 {
+    /// <summary>
+    /// FileGenerate contains random file check logic
+    /// </summary>
     public class FileCheck
     {
         private static readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);

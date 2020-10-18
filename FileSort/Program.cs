@@ -8,6 +8,9 @@ using System.Reflection;
 
 namespace FileSort
 {
+    /// <summary>
+    /// FileSort contains random file sort logic
+    /// </summary>
     class Program
     {
         private static readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);

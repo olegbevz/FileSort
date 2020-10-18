@@ -2,6 +2,9 @@
 
 namespace FileSort.Core
 {
+    /// <summary>
+    /// SortMethodFactory represents factory for a sort nethod logic
+    /// </summary>
     public class SortMethodFactory : ISortMethodFactory
     {
         private readonly int _channelCapacity;

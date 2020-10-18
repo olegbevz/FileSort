@@ -9,6 +9,11 @@ using System.Threading.Tasks;
 
 namespace FileSort.Core
 {
+    /// <summary>
+    /// ConcurrentOppositeMergeQuickSort represents a concurrent version of
+    /// OppositeMergeQuickSort algorithm
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class ConcurrentOppositeMergeQuickSort<T> : MergeSortBase<T>, ISortMethod<T> where T : IComparable
     {
         private static readonly ILog _logger = LogProvider.GetCurrentClassLogger();
@@ -38,37 +43,66 @@ namespace FileSort.Core
         }
         public IEnumerable<T> Sort(IEnumerable<T> source)
         {
+            // Here we create channel for readen data chunks
             var readChannel = CreateReadChannel();
+
+            // Here we create channel for sorted data chunks
             var sortChannel = CreateSortChannel();
 
-            var readTask = Task.Run(async () => await ReadChunks(source, readChannel.Writer));
-            var sortTasks = new Task[_concurrency];
-            for (int i = 0; i < _concurrency; i++)
+            try
             {
-                sortTasks[i] = Task.Run(async () => await SortChunks(readChannel.Reader, sortChannel.Writer));
+                // Start the reading task
+                var readTask = Task.Run(async () => await ReadChunks(source, readChannel.Writer));
+
+                // Start several sorting tasks
+                var sortTasks = new Task[_concurrency];
+                for (int i = 0; i < _concurrency; i++)
+                {
+                    sortTasks[i] = Task.Run(async () => await SortChunks(readChannel.Reader, sortChannel.Writer));
+                }
+
+                // Start several merge taks
+                var mergeTasks = new Task<IEnumerable<IChunkReference<T>>>[_stackConcurrency];
+                for (int i = 0; i < _stackConcurrency; i++)
+                {
+                    mergeTasks[i] = Task.Run(async () => await PushChunksToStackAndMerge(sortChannel.Reader));
+                }
+
+                // Waiting for reading phase to finish
+                readTask.Wait();
+
+                // Waiting for all soring tasks to finish
+                Task.WaitAll(sortTasks);
+
+                sortChannel.Writer.Complete();
+
+                // Waiting for merge tasks to finish
+                Task.WaitAll(mergeTasks);
+
+                // When all file patrs will be ready execute the final merge
+                return ExecuteFinalMerge(mergeTasks);
             }
-            var mergeTasks = new Task<IEnumerable<IChunkReference<T>>>[_stackConcurrency];
-            for (int i = 0; i < _stackConcurrency; i++)
+            catch (Exception ex)
             {
-                mergeTasks[i] = Task.Run(async () => await PushChunksToStackAndMerge(sortChannel.Reader));
+                readChannel.Writer.Complete(ex);
+                sortChannel.Writer.Complete(ex);
+                throw;
             }
+        }
 
-            readTask.Wait();
-            Task.WaitAll(sortTasks);
-            sortChannel.Writer.Complete();
-            Task.WaitAll(mergeTasks);
-
+        private IChunkReference<T> ExecuteFinalMerge(Task<IEnumerable<IChunkReference<T>>>[] mergeTasks)
+        {
             _logger.Info("Starting final merge");
+
             var stopwatch = Stopwatch.StartNew();
 
             var chunks = mergeTasks
                 .Where(x => x.Result != null)
-                .SelectMany(x => x.Result).ToArray();           
+                .SelectMany(x => x.Result).ToArray();
             var chunk = _appender.Merge(chunks, _chunkStack);
 
             _logger.Info($"Final merge completed in {stopwatch.Elapsed}");
             stopwatch.Stop();
-
             return chunk;
         }
 

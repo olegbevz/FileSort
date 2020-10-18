@@ -4,6 +4,10 @@ using System.Collections.Generic;
 
 namespace FileSort.Core
 {
+    /// <summary>
+    /// OppositeMergeQuickSort represents a combination of quicksort and merge bottom-up sort
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class OppositeMergeQuickSort<T> : MergeSortBase<T>, ISortMethod<T> where T : IComparable
     {
         private static readonly ILog _logger = LogProvider.GetCurrentClassLogger();
@@ -23,6 +27,7 @@ namespace FileSort.Core
 
             _logger.Info("Starting reading phase...");
 
+            // Here we sequentally collect an array of data
             foreach (var value in source)
             {
                 currentChunk.Add(value);
@@ -32,6 +37,8 @@ namespace FileSort.Core
                 }
                 else
                 {
+                    // When array is collected we quicksort it and
+                    // push it to the stack recursively
                     currentChunk.Sort();
                     _appender.PushToStackRecursively(currentChunk);
                     currentChunk.Clear();
@@ -39,6 +46,8 @@ namespace FileSort.Core
                 }                
             }
 
+            // When all data is readen we quicksort the last data chunk
+            // and push it to the stack
             currentChunk.Sort();
             _appender.PushToStackRecursively(currentChunk);
 

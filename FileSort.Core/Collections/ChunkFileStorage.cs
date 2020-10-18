@@ -5,6 +5,11 @@ using System.IO;
 
 namespace FileSort.Core
 {
+    /// <summary>
+    /// ChunkStack file storage
+    /// Puts chunk of data to the disk if it doesn't fit into memory
+    /// </summary>
+    /// <typeparam name="T">Type of data</typeparam>
     public class ChunkFileStorage<T> : IChunkStorage<T>, IDisposable
     {
         private static readonly ILog _logger = LogProvider.GetCurrentClassLogger();

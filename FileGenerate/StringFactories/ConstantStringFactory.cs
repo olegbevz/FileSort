@@ -18,7 +18,7 @@ namespace FileGenerate
 
         public string Create()
         {
-            return $"{_number} {_name}";
+            return $"{_number}. {_name}";
         }
 
         public string Create(int length)

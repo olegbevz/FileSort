@@ -7,6 +7,9 @@ using System.Text;
 
 namespace FileSort.Core
 {
+    /// <summary>
+    /// FileLineReader represents simple FileLine enumeration based on input stream
+    /// </summary>
     public class FileLineReader : IEnumerable<FileLine>
     {
         private static readonly ILog _logger = LogProvider.For<FileLineReader>();

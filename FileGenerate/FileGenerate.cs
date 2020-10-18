@@ -4,6 +4,9 @@ using FileSort.Core;
 
 namespace FileGenerate
 {
+    /// <summary>
+    /// FileGenerate contains random file generation logic
+    /// </summary>
     public class FileGenerate
     {
         private readonly int _fileBuffer;

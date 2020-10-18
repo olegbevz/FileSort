@@ -2,6 +2,10 @@
 
 namespace FileSort.Core
 {
+    /// <summary>
+    /// Some abstract external chunks storage
+    /// </summary>
+    /// <typeparam name="T">Type of data</typeparam>
     public interface IChunkStorage<T>
     {
         IEnumerable<T> OpenForRead(long size);

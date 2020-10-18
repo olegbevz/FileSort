@@ -6,6 +6,13 @@ using System.Threading;
 
 namespace FileSort.Core
 {
+    /// <summary>
+    /// Chunks stack is a collection with stores data partially in memory 
+    /// and partially in some external storage (disk).
+    /// When consumer tries to push data wich exceeds the memory limit stack pushes
+    /// it's older values to the external storage.
+    /// </summary>
+    /// <typeparam name="T">Type of data</typeparam>
     public class ChunkStack<T>
     {
         public static IChunkReference<T> Empty = new MemoryChunkReference(0, 0);
@@ -17,6 +24,12 @@ namespace FileSort.Core
 
         private long _currentSize;
 
+        /// <summary>
+        /// ChunkStack constructor
+        /// </summary>
+        /// <param name="bufferSize">Memory limit for stored data</param>
+        /// <param name="sizeCalculator">Calculator for data size calculation</param>
+        /// <param name="chunkStorage">External data storage</param>
         public ChunkStack(
             long bufferSize, 
             ISizeCalculator<T> sizeCalculator,
