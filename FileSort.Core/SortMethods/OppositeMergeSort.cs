@@ -24,7 +24,7 @@ namespace FileSort.Core
                 if (chunkPairIndex == ChunkPairSize)
                 {
                     _sortJoin.Join(chunkPair);
-                    PushToStackRecursively(chunkPair);
+                    _appender.PushToStackRecursively(chunkPair);
 
                     chunkPairIndex = 0;
                 }
@@ -35,7 +35,7 @@ namespace FileSort.Core
                 _chunkStack.Push(new T[] { chunkPair[0] });
             }
 
-            return ExecuteFinalMerge();
+            return _appender.ExecuteFinalMerge();
         }
     }
 }

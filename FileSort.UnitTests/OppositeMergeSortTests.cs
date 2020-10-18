@@ -111,41 +111,41 @@ namespace FileSort.UnitTests
                 new ConstantSizeCalculator<int>(sizeof(int)),
                 null);
 
-            var sort = new OppositeMergeSort<int>(chunkStack1, chunkStack2);
+            var appender = new MergeSortBase<int>.ChunkStackAppender(chunkStack1, chunkStack2);
 
-            sort.PushToStackRecursively(new int[] { 1, 2 });
+            appender.PushToStackRecursively(new int[] { 1, 2 });
             CollectionAssert.AreEqual(new int[] { 2 }, chunkStack1.GetChunkSizes());
             CollectionAssert.AreEqual(new int[] { }, chunkStack2.GetChunkSizes());
 
-            sort.PushToStackRecursively(new int[] { 3, 4 });
+            appender.PushToStackRecursively(new int[] { 3, 4 });
             CollectionAssert.AreEqual(new int[] { }, chunkStack1.GetChunkSizes());
             CollectionAssert.AreEqual(new int[] { 4 }, chunkStack2.GetChunkSizes());
 
-            sort.PushToStackRecursively(new int[] { 5, 6 });
+            appender.PushToStackRecursively(new int[] { 5, 6 });
             CollectionAssert.AreEqual(new int[] { 2 }, chunkStack1.GetChunkSizes());
             CollectionAssert.AreEqual(new int[] { 4 }, chunkStack2.GetChunkSizes());
 
-            sort.PushToStackRecursively(new int[] { 7, 8 });
+            appender.PushToStackRecursively(new int[] { 7, 8 });
             CollectionAssert.AreEqual(new int[] { 8 }, chunkStack1.GetChunkSizes());
             CollectionAssert.AreEqual(new int[] { }, chunkStack2.GetChunkSizes());
 
-            sort.PushToStackRecursively(new int[] { 9, 10 });
+            appender.PushToStackRecursively(new int[] { 9, 10 });
             CollectionAssert.AreEqual(new int[] { 2,  8 }, chunkStack1.GetChunkSizes());
             CollectionAssert.AreEqual(new int[] { }, chunkStack2.GetChunkSizes());
 
-            sort.PushToStackRecursively(new int[] { 11, 12 });
+            appender.PushToStackRecursively(new int[] { 11, 12 });
             CollectionAssert.AreEqual(new int[] { 8 }, chunkStack1.GetChunkSizes());
             CollectionAssert.AreEqual(new int[] { 4 }, chunkStack2.GetChunkSizes());
 
-            sort.PushToStackRecursively(new int[] { 12, 13 });
+            appender.PushToStackRecursively(new int[] { 12, 13 });
             CollectionAssert.AreEqual(new int[] { 2, 8 }, chunkStack1.GetChunkSizes());
             CollectionAssert.AreEqual(new int[] { 4 }, chunkStack2.GetChunkSizes());
 
-            sort.PushToStackRecursively(new int[] { 14, 15 });
+            appender.PushToStackRecursively(new int[] { 14, 15 });
             CollectionAssert.AreEqual(new int[] { }, chunkStack1.GetChunkSizes());
             CollectionAssert.AreEqual(new int[] { 16 }, chunkStack2.GetChunkSizes());
 
-            sort.PushToStackRecursively(new int[] { 16, 17 });
+            appender.PushToStackRecursively(new int[] { 16, 17 });
             CollectionAssert.AreEqual(new int[] { 2}, chunkStack1.GetChunkSizes());
             CollectionAssert.AreEqual(new int[] { 16 }, chunkStack2.GetChunkSizes());
         }
