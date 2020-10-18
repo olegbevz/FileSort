@@ -3,6 +3,7 @@ using FileSort.Core;
 using log4net;
 using log4net.Config;
 using System;
+using System.IO;
 using System.Reflection;
 
 namespace FileSort
@@ -37,15 +38,10 @@ namespace FileSort
                 var streamBufferSize = (int)MemorySize.Parse(options.StreamBuffer);
                 var memoryBufferSize = MemorySize.Parse(options.MemoryBuffer);
 
-                var sortMethodFactory = new SortMethodFactory(
-                    options.SortMethod,
-                    options.ChannelCapacity,
-                    options.Concurrency,
-                    options.QuickSortSize);
-
+                var sortMethodFactory = CreateSortMethodFactory(options);
                 var fileSort = new FileSort(
-                    fileBufferSize, 
-                    streamBufferSize, 
+                    fileBufferSize,
+                    streamBufferSize,
                     memoryBufferSize,
                     sortMethodFactory);
 
@@ -58,6 +54,22 @@ namespace FileSort
                 _logger.Error($"Failed to sort file '{options.InputFileName}'.", ex);
                 return 1;
             }
+        }
+
+        private static ISortMethodFactory CreateSortMethodFactory(FileSortOptions options)
+        {
+            if (options.SortMethod != null)
+                return new SortMethodFactory(
+                    options.SortMethod.Value,
+                    options.ChannelCapacity,
+                    options.Concurrency,
+                    options.QuickSortSize);
+
+            return new SmartSortMethodFactory(
+                new FileInfo(options.InputFileName).Length,
+                options.ChannelCapacity,
+                options.Concurrency,
+                options.QuickSortSize);
         }
     }
 }

@@ -122,26 +122,23 @@ namespace FileSort.Core
 
             public IChunkReference<T> ExecuteFinalMerge()
             {
-                var currentChunkStack = _chunkStack;
-                
-                if (_tempChunkStack.Count > 0 && _chunkStack.TotalSize > _tempChunkStack.TotalSize)
-                {
-                    Merge(_tempChunkStack.ToArray(), currentChunkStack);                    
-                }
+                var targetChunkStack = _chunkStack;
+                if (_chunkStack.TotalSize < _tempChunkStack.TotalSize)
+                    targetChunkStack = _tempChunkStack;
 
-                if (_chunkStack.TotalSize < _tempChunkStack.TotalSize && _chunkStack.Count > 0)
-                {
-                    Merge(_chunkStack.ToArray(), _tempChunkStack);
-                    currentChunkStack = _tempChunkStack;
-                }
+                var sourceChunkStack = GetOtherChunkStack(targetChunkStack);
 
-                if (currentChunkStack.Count > 1)
-                {
-                    return Merge(currentChunkStack.ToArray(), GetOtherChunkStack(currentChunkStack));
-                }
+                if (sourceChunkStack.Count > 0)
+                    Merge(sourceChunkStack.ToArray(), targetChunkStack);
 
-                if (currentChunkStack.Count == 1)
-                    return currentChunkStack.Pop();
+                if (targetChunkStack.Count > 1)
+                {
+                    return Merge(targetChunkStack.ToArray(), sourceChunkStack);
+                }
+                else if (targetChunkStack.Count == 1)
+                {
+                    return targetChunkStack.Pop();
+                }
 
                 return ChunkStack<T>.Empty;
             }
