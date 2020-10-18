@@ -41,7 +41,6 @@ namespace FileSort.Core
             var readChannel = CreateReadChannel();
             var sortChannel = CreateSortChannel();
 
-
             var readTask = Task.Run(async () => await ReadChunks(source, readChannel.Writer));
             var sortTasks = new Task[_concurrency];
             for (int i = 0; i < _concurrency; i++)
@@ -49,21 +48,15 @@ namespace FileSort.Core
                 sortTasks[i] = Task.Run(async () => await SortChunks(readChannel.Reader, sortChannel.Writer));
             }
             var mergeTasks = new Task<ChunkStack<T>>[_stackConcurrency];
-            //for (int i = 0; i < _concurrency; i++)
-            //{
-            //    mergeTasks[i] = Task.Run(async () => await PushChunksToStackAndMerge(sortChannel.Reader).ConfigureAwait(false));
-            //}
-            mergeTasks[0] = Task.Run(async () => await PushChunksToStackAndMerge(sortChannel.Reader).ConfigureAwait(false));
-            mergeTasks[1] = Task.Run(async () => await PushChunksToStackAndMerge(sortChannel.Reader).ConfigureAwait(false));
-            //mergeTasks[2] = Task.Run(async () => await PushChunksToStackAndMerge(sortChannel.Reader).ConfigureAwait(false));
+            for (int i = 0; i < _stackConcurrency; i++)
+            {
+                mergeTasks[i] = Task.Run(async () => await PushChunksToStackAndMerge(sortChannel.Reader).ConfigureAwait(false));
+            }
 
             readTask.Wait();
             Task.WaitAll(sortTasks);
             sortChannel.Writer.Complete();
             Task.WaitAll(mergeTasks);
-
-            //var firstStack = mergeTasks[0].Result;
-            //var secondStack = mergeTasks[1].Result;
 
             //return _appender.Merge(firstStack.ToArray().Concat(secondStack.ToArray()).ToArray(), _chunkStack);
 
