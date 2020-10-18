@@ -36,7 +36,7 @@ If you run out of memory you can descrease memory limit by setting '--memory-buf
 
 **FileGenerate**
 
-FileGenerate is a command line tool for random files generaion.
+FileGenerate is a command line tool for random files generation.
 For generation of random lines following modes are available: 
 - constant (constant string), 
 - sequence (simple sequental words selection with some fixed step), 
@@ -50,7 +50,7 @@ FileGenerate.exe 10MB.txt -s 10MB
 
 **FileCheck**
 
-FileCheck is a simple utility for line order check or file format check
+FileCheck is a simple utility for line order check or file format check.
 
 *Command line example:*
 
