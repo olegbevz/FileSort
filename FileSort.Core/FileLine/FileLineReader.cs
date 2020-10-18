@@ -80,7 +80,8 @@ namespace FileSort.Core
                     if (_streamReader.EndOfStream)
                         return false;
 
-                    throw new ArgumentException($"Failed to parse line {_currentLine}: '{_streamReader.ReadLine()}'.");
+                    throw new ArgumentException(
+                        $"Failed to parse line {_currentLine} '{_streamReader.ReadLine()}' at position {_streamReader.BaseStream.Position}.");
                 }
 
                 if (_currentLine % WritePositionFrequency == 0)
