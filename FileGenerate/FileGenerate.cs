@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using FileSort.Core;
 
 namespace FileGenerate
@@ -65,6 +66,7 @@ namespace FileGenerate
                         if (!writeDuplicate)
                         {
                             WriteRandomStrings(streamWriter, _memoryBuffer);
+                            streamWriter.Flush();
                         }
 
                         fileStream.Write(buffer, 0, buffer.Length);
