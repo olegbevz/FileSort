@@ -6,7 +6,9 @@ using System.Threading;
 
 namespace FileSort
 {
-
+    /// <summary>
+    /// FileGenerate contains file sort logic
+    /// </summary>
     public class FileSort
     {
         private readonly int _fileBuffer;
