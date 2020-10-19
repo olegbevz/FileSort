@@ -1,4 +1,4 @@
-﻿using FileSort.Core.Logging;
+using FileSort.Core.Logging;
 using System;
 using System.Collections.Generic;
 
@@ -14,8 +14,12 @@ namespace FileSort.Core
 
         private readonly int _chunkSize;
 
-        public OppositeMergeQuickSort(ChunkStack<T> chunkStack, ChunkStack<T> tempChunkStack, int chunkSize = 1000000)
-            : base(chunkStack, tempChunkStack)
+        public OppositeMergeQuickSort(
+            ChunkStack<T> chunkStack, 
+            ChunkStack<T> tempChunkStack, 
+            int chunkSize = 1000000,
+            bool onlyMemoryMerge = false)
+            : base(chunkStack, tempChunkStack, onlyMemoryMerge)
         {
             _chunkSize = chunkSize;
         }
