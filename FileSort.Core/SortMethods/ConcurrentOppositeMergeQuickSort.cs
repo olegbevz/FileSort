@@ -1,4 +1,4 @@
-﻿using FileSort.Core.Logging;
+using FileSort.Core.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,10 +19,11 @@ namespace FileSort.Core
         private static readonly ILog _logger = LogProvider.GetCurrentClassLogger();
 
         private readonly int _chunkSize;
-        private readonly int _concurrency;
-        private readonly int _stackConcurrency;
+        private readonly int _sortConcurrency;
+        private readonly int _mergeConcurrency;
         private readonly IChunkStackFactory<T> _chunkStackFactory;
-        private readonly int _channelCapacity; 
+        private readonly int _channelCapacity;
+        private readonly bool _onlyMemoryMerge;
 
         private int _concurrencyCounter;
 
@@ -30,16 +31,18 @@ namespace FileSort.Core
             ChunkStack<T> chunkStack,
             IChunkStackFactory<T> chunkStackFactory,
             int channelCapacity = 2,
-            int concurrency = 10,
+            int sortConcurrency = 10,
+            int mergeConcurrency = 4,
             int chunkSize = 1000000,
-            int stackConcurrency = 2)
-            : base(chunkStack, null)
+            bool onlyMemoryMerge = false)
+            : base(chunkStack, null, onlyMemoryMerge)
         {
             _chunkSize = chunkSize;
             _chunkStackFactory = chunkStackFactory;
             _channelCapacity = channelCapacity;
-            _concurrency = concurrency;
-            _stackConcurrency = stackConcurrency;
+            _sortConcurrency = sortConcurrency;
+            _mergeConcurrency = mergeConcurrency;
+            _onlyMemoryMerge = onlyMemoryMerge;
         }
         public IEnumerable<T> Sort(IEnumerable<T> source)
         {
@@ -55,15 +58,15 @@ namespace FileSort.Core
                 var readTask = Task.Run(async () => await ReadChunks(source, readChannel.Writer));
 
                 // Start several sorting tasks
-                var sortTasks = new Task[_concurrency];
-                for (int i = 0; i < _concurrency; i++)
+                var sortTasks = new Task[_sortConcurrency];
+                for (int i = 0; i < _sortConcurrency; i++)
                 {
                     sortTasks[i] = Task.Run(async () => await SortChunks(readChannel.Reader, sortChannel.Writer));
                 }
 
                 // Start several merge taks
-                var mergeTasks = new Task<IEnumerable<IChunkReference<T>>>[_stackConcurrency];
-                for (int i = 0; i < _stackConcurrency; i++)
+                var mergeTasks = new Task<IEnumerable<IChunkReference<T>>>[_mergeConcurrency];
+                for (int i = 0; i < _mergeConcurrency; i++)
                 {
                     mergeTasks[i] = Task.Run(async () => await PushChunksToStackAndMerge(sortChannel.Reader));
                 }
@@ -225,7 +228,10 @@ namespace FileSort.Core
                     }
                 }
 
-                return chunkStack.ToArray().Concat(tempChunStack.ToArray());
+                if (_onlyMemoryMerge)
+                    return chunkStack.ToArray().Concat(tempChunStack.ToArray());
+
+                return new[] { appender.ExecuteFinalMerge() };
             }
             catch (Exception ex)
             {
