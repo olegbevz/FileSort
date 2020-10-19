@@ -45,7 +45,7 @@ namespace FileSort.Core
             public FileLineEnumerator(Stream stream, int streamBuffer)
             {
                 _stream = stream;
-                _streamReader = new StreamReader(_stream, Encoding.UTF8, false, streamBuffer);
+                _streamReader = new StreamReader(_stream, Encoding.UTF8, true, streamBuffer);
             }
 
             public FileLine Current

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace FileSort.Core
 {
@@ -8,19 +8,25 @@ namespace FileSort.Core
     public class SortMethodFactory : ISortMethodFactory
     {
         private readonly int _channelCapacity;
-        private readonly int _concurrency;
+        private readonly int _sortConcurrency;
+        private readonly int _mergeConcurrency;
         private readonly int? _quickSortSize;
+        private readonly bool _onlyMemoryMerge;
         private readonly SortMethod _sortMethod;
 
         public SortMethodFactory(
             SortMethod sortMethod,
             int channelCapacity, 
-            int concurrency, 
+            int sortConcurrency, 
+            int mergeConcurrency,
+            bool onlyMemoryMerge,
             int? quickSortSize)
         {
             _sortMethod = sortMethod;
             _channelCapacity = channelCapacity;
-            _concurrency = concurrency;
+            _sortConcurrency = sortConcurrency;
+            _mergeConcurrency = mergeConcurrency;
+            _onlyMemoryMerge = onlyMemoryMerge;
             _quickSortSize = quickSortSize;
         }
 
@@ -30,7 +36,10 @@ namespace FileSort.Core
             {
                 case SortMethod.MergeSort:
                     {
-                        return new OppositeMergeSort<T>(chunkStack, chunkStackFactory.CreateChunkStack());
+                        return new OppositeMergeSort<T>(
+                            chunkStack, 
+                            chunkStackFactory.CreateChunkStack(), 
+                            _onlyMemoryMerge);
                     }
                 case SortMethod.MergeQuickSort:
                     {
@@ -38,11 +47,13 @@ namespace FileSort.Core
                             return new OppositeMergeQuickSort<T>(
                                 chunkStack,
                                 chunkStackFactory.CreateChunkStack(), 
-                                _quickSortSize.Value);
+                                _quickSortSize.Value,
+                                _onlyMemoryMerge);
 
                         return new OppositeMergeQuickSort<T>(
                             chunkStack,
-                            chunkStackFactory.CreateChunkStack());
+                            chunkStackFactory.CreateChunkStack(),
+                            onlyMemoryMerge: _onlyMemoryMerge);
                     }
                 case SortMethod.ConcurrentMergeQuickSort:
                     {
@@ -51,14 +62,18 @@ namespace FileSort.Core
                                 chunkStack,
                                 chunkStackFactory,
                                 _channelCapacity,
-                                _concurrency,
-                                _quickSortSize.Value);
+                                _sortConcurrency,
+                                _mergeConcurrency,
+                                _quickSortSize.Value,
+                                _onlyMemoryMerge);
 
                         return new ConcurrentOppositeMergeQuickSort<T>(
                             chunkStack,
                             chunkStackFactory,
                             _channelCapacity,
-                            _concurrency);
+                            _sortConcurrency,
+                            _mergeConcurrency,
+                            onlyMemoryMerge: _onlyMemoryMerge);
                     }
                 default:
                     throw new NotSupportedException();

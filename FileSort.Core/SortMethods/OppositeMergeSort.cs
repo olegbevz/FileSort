@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace FileSort.Core
@@ -10,8 +10,8 @@ namespace FileSort.Core
     public class OppositeMergeSort<T> : MergeSortBase<T>, ISortMethod<T> where T : IComparable
     {
         private const int ChunkPairSize = 2;
-        public OppositeMergeSort(ChunkStack<T> chunkStack, ChunkStack<T> tempChunkStack)
-            : base(chunkStack, tempChunkStack)
+        public OppositeMergeSort(ChunkStack<T> chunkStack, ChunkStack<T> tempChunkStack, bool onlyMemoryMerge = false)
+            : base(chunkStack, tempChunkStack, onlyMemoryMerge)
         {
         }
 

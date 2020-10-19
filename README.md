@@ -48,6 +48,18 @@ For generation of random lines following modes are available:
 
 FileGenerate.exe 10MB.txt -s 10MB
 
+*Command line description:*
+
+FileGenerate.exe
+  - -s, --size         (Default: 10485760) Target file size
+  - -g, --generator    (Default: Random) Random string generation algorithm (sequence, random, bogus, autofixture)
+  - --file-buffer      (Default: 4KB) Size of FileStream internal buffer
+  - --memory-buffer    (Default: 100MB) Size of memory buffer
+  - --duplicates       (Default: 10) Amount of duplicated blocks after each random block
+  - --help             Display this help screen.
+  - --version          Display version information.
+  - value pos. 0       Required. Target file path
+
 **FileCheck**
 
 FileCheck is a simple utility for line order check or file format check.

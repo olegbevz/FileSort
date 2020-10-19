@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,9 +13,9 @@ namespace FileSort.Core
 
         protected readonly ChunkStackAppender _appender;
 
-        protected MergeSortBase(ChunkStack<T> chunkStack, ChunkStack<T> tempChunkStack)
+        protected MergeSortBase(ChunkStack<T> chunkStack, ChunkStack<T> tempChunkStack, bool onlyMemoryMerge)
         {
-            _appender = new ChunkStackAppender(chunkStack, tempChunkStack);
+            _appender = new ChunkStackAppender(chunkStack, tempChunkStack, onlyMemoryMerge);
             _tempChunkStack = tempChunkStack;
             _chunkStack = chunkStack;
         }
@@ -30,7 +30,7 @@ namespace FileSort.Core
             public ChunkStackAppender(
                 ChunkStack<T> chunkStack,
                 ChunkStack<T> tempChunkStack,
-                bool onlyMemoryMerge = true)
+                bool onlyMemoryMerge = false)
             {
                 _chunkStack = chunkStack;
                 _tempChunkStack = tempChunkStack;
