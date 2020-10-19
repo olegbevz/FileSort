@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace FileSort.Core
 {
@@ -8,8 +8,8 @@ namespace FileSort.Core
     /// </summary>
     public class SmartSortMethodFactory : SortMethodFactory
     {
-        public SmartSortMethodFactory(long fileSize, int channelCapacity, int concurrency, int? quickSortSize)
-            : base(CalculateSortMethod(fileSize), channelCapacity, concurrency, quickSortSize)
+        public SmartSortMethodFactory(long fileSize, int channelCapacity, int sortConcurrency, int mergeConcurrency, bool onlyMemoryMerge, int? quickSortSize)
+            : base(CalculateSortMethod(fileSize), channelCapacity, sortConcurrency, mergeConcurrency, onlyMemoryMerge, quickSortSize)
         {
         }
 
