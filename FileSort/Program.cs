@@ -8,9 +8,6 @@ using System.Reflection;
 
 namespace FileSort
 {
-    /// <summary>
-    /// FileSort contains random file sort logic
-    /// </summary>
     class Program
     {
         private static readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -65,13 +62,17 @@ namespace FileSort
                 return new SortMethodFactory(
                     options.SortMethod.Value,
                     options.ChannelCapacity,
-                    options.Concurrency,
+                    options.SortConcurrency,
+                    options.MergeConcurrency,
+                    options.OnlyMemoryMerge,
                     options.QuickSortSize);
 
             return new SmartSortMethodFactory(
                 new FileInfo(options.InputFileName).Length,
                 options.ChannelCapacity,
-                options.Concurrency,
+                options.SortConcurrency,
+                options.MergeConcurrency,
+                options.OnlyMemoryMerge,
                 options.QuickSortSize);
         }
     }
