@@ -1,51 +1,64 @@
+using FileSort.Core.Logging;
 using System;
 using System.Collections.Generic;
 
 namespace FileSort.Core
 {
     /// <summary>
-    /// OppositeMergeSort represents classic merge sort bottom up algorithm
+    /// OppositeMergeQuickSort represents a combination of quicksort and merge bottom-up sort
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class OppositeMergeSort<T> : MergeSortBase<T>, ISortMethod<T> where T : IComparable
+    public class OppositeMergeQuickSort<T> : MergeSortBase<T>, ISortMethod<T> where T : IComparable
     {
-        private const int ChunkPairSize = 2;
-        public OppositeMergeSort(ChunkStack<T> chunkStack, ChunkStack<T> tempChunkStack, bool onlyMemoryMerge = false)
+        private static readonly ILog _logger = LogProvider.GetCurrentClassLogger();
+
+        private readonly int _chunkSize;
+
+        public OppositeMergeQuickSort(
+            ChunkStack<T> chunkStack, 
+            ChunkStack<T> tempChunkStack, 
+            int chunkSize = 1000000,
+            bool onlyMemoryMerge = false)
             : base(chunkStack, tempChunkStack, onlyMemoryMerge)
         {
+            _chunkSize = chunkSize;
         }
 
         public IEnumerable<T> Sort(IEnumerable<T> source)
         {
-            // Here we sequentally collect pairs of data 
-            // while reading input source
-            var chunkPair = new T[ChunkPairSize];
-            int chunkPairIndex = 0;
+            var currentChunk = new List<T>();
+            long currentChunkSize = 0;
 
+            _logger.Info("Starting reading phase...");
+
+            // Here we sequentally collect an array of data
             foreach (var value in source)
             {
-                chunkPair[chunkPairIndex] = value;
-                chunkPairIndex++;
-
-                if (chunkPairIndex == ChunkPairSize)
-                {
-                    // When the pair is ready we sort it and push 
-                    // to the stack
-                    _sortJoin.Join(chunkPair);
-                    _appender.PushToStackRecursively(chunkPair);
-
-                    chunkPairIndex = 0;
+                currentChunk.Add(value);
+                if (currentChunkSize < _chunkSize)
+                {                   
+                    currentChunkSize++;
                 }
+                else
+                {
+                    // When array is collected we quicksort it and
+                    // push it to the stack recursively
+                    currentChunk.Sort();
+                    _appender.PushToStackRecursively(currentChunk);
+                    currentChunk.Clear();
+                    currentChunkSize = 0;
+                }                
             }
 
-            // If after all data is readen single item is left 
-            // we push it to the stack
-            if (chunkPairIndex > 0 && chunkPairIndex < ChunkPairSize)
-            {
-                _chunkStack.Push(new T[] { chunkPair[0] });
-            }
+            // When all data is readen we quicksort the last data chunk
+            // and push it to the stack
+            currentChunk.Sort();
+            _appender.PushToStackRecursively(currentChunk);
+
+            _logger.Info("Reading phase completed");
+            _logger.Info("Starting final merge phase...");
 
             return _appender.ExecuteFinalMerge();
-        }
+        }        
     }
 }
