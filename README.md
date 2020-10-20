@@ -21,7 +21,7 @@ FileSort.exe 1GB.txt 1GB_sorted.txt
 FileSort.exe
   - --file-buffer         (Default: 1MB) Size of FileStream internal buffer
   - --stream-buffer       (Default: 4KB) Size of StreamReader internal buffer
-  - --memory-buffer       (Default: 250MB) Size of memory buffer
+  - --memory-buffer       (Default: 150MB) Size of memory buffer
   - --quick-sort-size     Amount of records which will be quicksorted in memory before mergesort
   - --channel-capacity    (Default: 2) Capacity of channel in concurrent sorting method
   - --concurrency         (Default: 10) Number of concurrent sorting operations in concurrent sorting methods
@@ -31,8 +31,8 @@ FileSort.exe
   - value pos. 0          Required. Path to the source file
   - value pos. 1          Required. Path to the target file
 
-*!WARNING! For large files sort a large amount of memory is availble by default. 
-If you run out of memory you can descrease memory limit by setting '--memory-buffer', '--channel-capacity'  values.*
+*!WARNING! For large files sorting a large amount of memory is availble by default. 
+If you run out of memory you can descrease memory limit by decreasing '--memory-buffer', '--channel-capacity' and '--merge-concurrency' settings.*
 
 **FileGenerate**
 
